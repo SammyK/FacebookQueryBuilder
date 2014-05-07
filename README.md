@@ -137,7 +137,7 @@ Sends a `POST` request to Graph and returns the response in the form of a collec
 // Update a page's profile
 $new_about_data = ['about' => 'This is the new about section!'];
 
-$response = $fqb->object('page_id')->with($new_data)->post();
+$response = $fqb->object('page_id')->with($new_about_data)->post();
 
 
 // Like a photo
