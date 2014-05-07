@@ -25,8 +25,7 @@ $user = $fqb->object('me')->get();
 - [License](#license)
 
 
-Installation
-============
+## Installation
 
 Facebook Query Builder is installed using [Composer](https://getcomposer.org/). Add the Facebook Query Builder package to your `composer.json` file.
 
@@ -47,8 +46,7 @@ $ composer require "sammyk/facebook-query-builder:1.0.*"
 > **Note:** The new "facebook/php-sdk-v4" was just released on **April 30, 2014** and there is a long laundry list of refactoring to be done. This package pulls in "dev-master" of the SDK to make sure all the latest refactoring and bug fixes are pulled in. Once a solid, stable version of the SDK is tagged, we'll use that one. :)
 
 
-Usage
-=====
+## Usage
 
 After [creating an app in Facebook](https://developers.facebook.com/apps), you'll need to provide the app ID and secret. You'll also need to [obtain an access token](https://developers.facebook.com/docs/facebook-login/access-tokens/) and provide that as well.
 
@@ -63,10 +61,9 @@ $fqb = new FQB();
 ```
 
 
-Examples
-========
+## Examples
 
-## Getting a single object from Graph
+### Getting a single object from Graph
 
 Get the logged in user's profile.
 
@@ -81,7 +78,7 @@ $page = $fqb->object('facebook_page_id')->fields('id','name','about')->get();
 ```
 
 
-## Nested requests
+### Nested requests
 
 Facebook Query Builder supports [nested requests](https://developers.facebook.com/docs/graph-api/using-graph-api/v2.0#fieldexpansion) so you can get a lot more data with just one call to Graph.
 
@@ -107,16 +104,15 @@ $user = $fqb->object('user_id')->fields('name', $photos)->get();
 ```
 
 
-Method Reference
-================
+## Method Reference
 
 
-## object(<string> "graph_edge")
+### object(*string* "graph_edge")
 
 Returns a new instance of the `FQB` factory. Any valid Graph edge can be passed to `object()`.
 
 
-## get()
+### get()
 
 Performs a `GET` request to Graph and returns the response in the form of a collection. Will throw an `FacebookQueryBuilderException` if something went wrong while trying to communicate with Graph.
 
@@ -129,7 +125,7 @@ $test_users = $fqb->object('my_app_id/accounts/test-users')->get();
 ```
 
 
-## post()
+### post()
 
 Sends a `POST` request to Graph and returns the response in the form of a collection. Will throw an `FacebookQueryBuilderException` if something went wrong while trying to communicate with Graph.
 
@@ -158,7 +154,7 @@ $response = $fqb->object('status_update_id/comments')->with($comment)->post();
 ```
 
 
-## delete()
+### delete()
 
 Sends a `DELETE` request to Graph and returns the response in the form of a collection. Will throw an `FacebookQueryBuilderException` if something went wrong while trying to communicate with Graph.
 
@@ -171,12 +167,12 @@ $response = $fqb->object('photo_id/likes')->delete();
 ```
 
 
-## edge(<string> "edge_name")
+### edge(*string* "edge_name")
 
 Returns an `Edge` value object to be passed to the `fields()` method.
 
 
-## fields(<array|string> "list of fields or edges")
+### fields(*array|string* "list of fields or edges")
 
 Set the fields and edges for this `Edge`. The fields and edges can be passed as an array or list of arguments.
 
@@ -188,7 +184,7 @@ $obj = $fqb->object('some_object')->fields('some_field', $edge_one, $edge_two)->
 ```
 
 
-## limit(<int> "number of results to return")
+### limit(*int* "number of results to return")
 
 Limit the number of results returned from Graph.
 
@@ -197,7 +193,7 @@ $edge = $fqb->edge('some_list_edge')->limit(7);
 ```
 
 
-## with(<array> "data to post or update")
+### with(*array* "data to post or update")
 
 Used only in conjunction with the `post()` method. The array should be an associative array. The key should be the name of the field as defined by Facebook.
 
@@ -214,13 +210,12 @@ $response = $fqb->object('comment_id')->with($comment_data)->post();
 ```
 
 
-Request Objects
-===============
+## Request Objects
 
 Requests sent to Graph are represented by 2 value objects, `RootEdge` & `Edge`. Each object represents a segment of the URL that will eventually be compiled, formatted as a string, and sent to Graph with either the `get()` or `post()` method.
 
 
-## RootEdge
+### RootEdge
 
 For debugging, you can access `RootEdge` as a string to get the URL that will be sent to Graph.
 
@@ -235,7 +230,7 @@ The above example will output:
     /me?fields=id,email
 
 
-## Edge
+### Edge
 
 An `Edge` has the same properties as a `RootEdge` but it will be formatted using [nested-request syntax](https://developers.facebook.com/docs/graph-api/using-graph-api/v2.0#fieldexpansion) when it is converted to a string.
 
@@ -263,8 +258,7 @@ The above example will output:
     /me?fields=email,photos.limit(5).fields(id,source)
 
 
-Response Objects
-================
+## Response Objects
 
 All responses from Graph are returned as a collection object that has many useful methods for playing with the response data.
 
@@ -294,7 +288,7 @@ $user['photos'].each(function ($value) {
 Check out the [Collection class](https://github.com/SammyK/FacebookQueryBuilder/blob/master/src/Collection.php) for the full list of methods.
 
 
-## GraphObject
+### GraphObject
 
 The `GraphObject` collection represents any set of data Graph would consider an "object". This could be a user, page, photo, etc. When you request an object by ID from Graph, the response will be returned as a `GraphObject` collection.
 
@@ -311,7 +305,7 @@ $my_graph_collection = $my_graph_object['likes'];
 ```
 
 
-## GraphCollection
+### GraphCollection
 
 The `GraphCollection` collection is a collection of `GraphObject`'s.
 
@@ -320,7 +314,7 @@ $my_graph_collection = $fqb->object('me/statuses')->get();
 ```
 
 
-## GraphError
+### GraphError
 
 If Graph returns an error, the response will be cast as a `GraphError` collection and a `FacebookQueryBuilderException` will be thrown.
 
@@ -338,8 +332,7 @@ catch (FacebookQueryBuilderException $e)
 ```
 
 
-Testing
-=======
+## Testing
 
 Just run `phpunit` from the root directory of this project.
 
@@ -348,8 +341,7 @@ $ phpunit
 ```
 
 
-TODO
-====
+## TODO
 
 Future developments:
 
@@ -365,20 +357,17 @@ $res = $fqb->batch(function($fqb) {
 2. Pagination on `GraphCollection` objects
 
 
-Contributing
-============
+## Contributing
 
 Please see [CONTRIBUTING](https://github.com/SammyK/FacebookQueryBuilder/blob/master/CONTRIBUTING.md) for details.
 
 
-Credits
-=======
+## Credits
 
 - [Sammy Kaye Powers](https://github.com/SammyK)
 - [All Contributors](https://github.com/SammyK/FacebookQueryBuilder/contributors)
 
 
-License
-=======
+## License
 
 The MIT License (MIT). Please see [License File](https://github.com/SammyK/FacebookQueryBuilder/blob/master/LICENSE) for more information.
