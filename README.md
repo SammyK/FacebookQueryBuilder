@@ -110,7 +110,7 @@ $user = $fqb->object('user_id')->fields('name', $photos)->get();
 
 Check out the [/examples](https://github.com/SammyK/FacebookQueryBuilder/tree/master/examples) directory to see more detailed examples.
 
-To get the details to work you'll need to duplicate the `/examples/config.php.dist` to `/examples/config.php` and enter your app credentials and access token.
+To get the examples to work you'll need to duplicate the `/examples/config.php.dist` to `/examples/config.php` and enter your app credentials and access token.
 
 
 ## Method Reference
