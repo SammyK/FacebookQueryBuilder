@@ -9,7 +9,13 @@ class GraphObject extends Collection
      *
      * @var array
      */
-    protected $cast_to_carbon = ['created_time', 'updated_time'];
+    protected $cast_to_carbon = [
+        'created_time',
+        'updated_time',
+        'start_time',
+        'end_time',
+        'backdated_time',
+    ];
 
     /**
      * Init this Graph object

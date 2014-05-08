@@ -14,13 +14,14 @@ $user = $fqb->object('me')->get();
 
 - [Installation](#installation)
 - [Usage](#usage)
-- [Examples](#examples)
-- [Method Reference](#method-reference)
-- [Request Objects](#request-objects)
-- [Response Objects](#response-objects)
+    - [Examples](#examples)
+    - [Method Reference](#method-reference)
+    - [Request Objects](#request-objects)
+    - [Response Objects](#response-objects)
 - [Testing](#testing)
 - [TODO](#todo)
 - [Contributing](#contributing)
+- [CHANGELOG](#changelog)
 - [Credits](#credits)
 - [License](#license)
 
@@ -63,6 +64,7 @@ $fqb = new FQB();
 
 ## Examples
 
+
 ### Getting a single object from Graph
 
 Get the logged in user's profile.
@@ -102,6 +104,13 @@ $photos = $fqb->edge('photos')->fields('id', 'source', $comments, $likes)->limit
 
 $user = $fqb->object('user_id')->fields('name', $photos)->get();
 ```
+
+
+### More Examples
+
+Check out the [/examples](https://github.com/SammyK/FacebookQueryBuilder/tree/master/examples) directory to see more detailed examples.
+
+To get the details to work you'll need to duplicate the `/examples/config.php.dist` to `/examples/config.php` and enter your app credentials and access token.
 
 
 ## Method Reference
@@ -280,7 +289,7 @@ foreach ($user['photos'] as $photo) {
 }
 
 // Morph the data with a closure
-$user['photos'].each(function ($value) {
+$user['photos']->each(function ($value) {
     $value->new_height = $value->height + 22;
 });
 ```
@@ -303,6 +312,23 @@ $my_graph_object = $fqb->object('object_id')->fields('id','likes')->get();
 
 $my_graph_collection = $my_graph_object['likes'];
 ```
+
+
+#### Dates & Times
+
+All datetime types on a `GraphObject` will be automatically cast as `Carbon` objects making datetime formatting/manipulation super easy.
+
+```php
+$photo = $fqb->object('some_photo_id')->fields('name', 'created_time')->get();
+
+echo 'Photo added ' . $photo['created_time']->diffForHumans();
+```
+
+The above example will output:
+
+    Photo added 4 days ago
+
+[Learn more about Carbon.](https://github.com/briannesbitt/Carbon)
 
 
 ### GraphCollection
@@ -360,6 +386,11 @@ $res = $fqb->batch(function($fqb) {
 ## Contributing
 
 Please see [CONTRIBUTING](https://github.com/SammyK/FacebookQueryBuilder/blob/master/CONTRIBUTING.md) for details.
+
+
+## CHANGELOG
+
+Please see [CHANGELOG](https://github.com/SammyK/FacebookQueryBuilder/blob/master/CHANGELOG.md) for history.
 
 
 ## Credits
