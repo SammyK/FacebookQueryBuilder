@@ -44,8 +44,6 @@ Or via the command line in the root of your project installation.
 $ composer require "sammyk/facebook-query-builder:1.0.*"
 ```
 
-> **Note:** The new "facebook/php-sdk-v4" was just released on **April 30, 2014** and there is a long laundry list of refactoring to be done. This package pulls in "dev-master" of the SDK to make sure all the latest refactoring and bug fixes are pulled in. Once a solid, stable version of the SDK is tagged, we'll use that one. :)
-
 
 ## Usage
 
