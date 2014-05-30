@@ -88,6 +88,8 @@ catch (FacebookQueryBuilderException $e)
 }
 ```
 
+See a full example of [obtaining an access token from redirect](https://github.com/SammyK/FacebookQueryBuilder/blob/master/examples/get_access_token_from_redirect.php).
+
 
 ### From Within App Canvas
 
