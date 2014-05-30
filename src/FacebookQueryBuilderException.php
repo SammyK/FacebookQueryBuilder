@@ -23,8 +23,9 @@ class FacebookQueryBuilderException extends \Exception
      *
      * @param \Facebook\FacebookRequestException|string $e
      * @param int $code
+     * @param \Exception|null $previous
      */
-    public function __construct($e, $code = 0)
+    public function __construct($e, $code = 0, $previous = null)
     {
         if ($e instanceof FacebookRequestException)
         {
@@ -32,12 +33,12 @@ class FacebookQueryBuilderException extends \Exception
 
             $this->type = $e->getErrorType();
 
-            parent::__construct('Error communicating with Facebook: ' . $e->getMessage(), $e->getCode());
+            parent::__construct('Error communicating with Facebook: ' . $e->getMessage(), $e->getCode(), $e);
 
             return;
         }
 
-        parent::__construct($e, $code);
+        parent::__construct($e, $code, $previous);
     }
 
     /**

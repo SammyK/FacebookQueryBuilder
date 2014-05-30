@@ -1,5 +1,4 @@
-Facebook Query Builder
-======================
+# Facebook Query Builder
 
 [![Build Status](http://img.shields.io/travis/SammyK/FacebookQueryBuilder.svg)](https://travis-ci.org/SammyK/FacebookQueryBuilder)
 [![Latest Stable Version](http://img.shields.io/packagist/v/sammyk/facebook-query-builder.svg)](https://packagist.org/packages/sammyk/facebook-query-builder)
@@ -14,6 +13,8 @@ $user = $fqb->object('me')->get();
 
 - [Installation](#installation)
 - [Usage](#usage)
+    - [Obtaining An Access Token](#obtaining-an-access-token)
+    - [Setting The Access Token Or FacebookSession](#setting-the-access-token-or-facebooksession)
     - [Examples](#examples)
     - [Method Reference](#method-reference)
     - [Request Objects](#request-objects)
@@ -47,16 +48,99 @@ $ composer require "sammyk/facebook-query-builder:1.0.*"
 
 ## Usage
 
-After [creating an app in Facebook](https://developers.facebook.com/apps), you'll need to provide the app ID and secret. You'll also need to [obtain an access token](https://developers.facebook.com/docs/facebook-login/access-tokens/) and provide that as well.
+After [creating an app in Facebook](https://developers.facebook.com/apps), you'll need to provide the app ID and secret.
 
 ```php
 use SammyK\FacebookQueryBuilder\FQB;
 
 FQB::setAppCredentials('your_app_id', 'your_app_secret');
 
-FQB::setAccessToken('access_token');
-
 $fqb = new FQB();
+```
+
+
+## Obtaining An Access Token
+
+Most calls to Graph require an access token. There are three ways to obtain an access token.
+
+
+### From A Redirect
+
+The most common way to obtain an access token is to provide a login URL and get the access token on the specified callback URL.
+
+```php
+$login_url = $fqb->auth()->getLoginUrl('http://my-callback/url');
+```
+
+Then in the callback URL you can obtain the access token.
+
+```php
+use SammyK\FacebookQueryBuilder\FacebookQueryBuilderException;
+
+try
+{
+    $token = $fqb->auth()->getTokenFromRedirect('http://my-callback/url');
+}
+catch (FacebookQueryBuilderException $e)
+{
+    // Failed to obtain access token
+    echo 'Error:' . $e->getMessage();
+}
+```
+
+
+### From Within App Canvas
+
+If you are running your app from within the context of an app canvas, you can try to obtain an access token from the signed request that Facebook sends to your app.
+
+```php
+use SammyK\FacebookQueryBuilder\FacebookQueryBuilderException;
+
+try
+{
+    $token = $fqb->auth()->getTokenFromCanvas();
+}
+catch (FacebookQueryBuilderException $e)
+{
+    // Failed to obtain access token
+    echo 'Error:' . $e->getMessage();
+}
+```
+
+
+### From The Javascript SDK
+
+If you are using the Javascript SDK on your site, FQB can obtain an access token from the signed request that the Javascript SDK sets in the cookie.
+
+```php
+use SammyK\FacebookQueryBuilder\FacebookQueryBuilderException;
+
+try
+{
+    $token = $fqb->auth()->getTokenFromJavascript();
+}
+catch (FacebookQueryBuilderException $e)
+{
+    // Failed to obtain access token
+    echo 'Error:' . $e->getMessage();
+}
+```
+
+
+## Setting The Access Token Or FacebookSession
+
+If you have already obtained an access token, you can set it like so:
+
+```php
+FQB::setAccessToken('access_token');
+```
+
+Doing so will new up a `FacebookSession` internally and automatically send it with all Graph calls.
+
+Alternatively, if you already have a `FacebookSession` object, you can set it like so:
+
+```php
+FQB::setFacebookSession($facebook_session);
 ```
 
 

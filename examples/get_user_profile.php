@@ -10,10 +10,14 @@ use SammyK\FacebookQueryBuilder\FacebookQueryBuilderException;
 try
 {
     $user = $fqb->object('me')->get();
-
-    var_dump($user);
 }
 catch (FacebookQueryBuilderException $e)
 {
+    echo '<p>Error: ' . $e->getMessage() . "\n\n";
+    echo '<p>Facebook SDK Said: ' . $e->getPrevious()->getMessage() . "\n\n";
+    echo '<p>Graph Said: ' .  "\n\n";
     var_dump($e->getResponse());
+    exit;
 }
+
+var_dump($user);

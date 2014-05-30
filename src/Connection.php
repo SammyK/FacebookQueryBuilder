@@ -71,6 +71,8 @@ class Connection
     {
         static::$app_id = $app_id;
         static::$app_secret = $app_secret;
+
+        FacebookSession::setDefaultApplication(static::$app_id, static::$app_secret);
     }
 
     /**
@@ -81,6 +83,7 @@ class Connection
     public static function setAccessToken($access_token)
     {
         static::$access_token = $access_token;
+        static::$facebook_session = null; // Reset the FacebookSession
     }
 
     /**
@@ -91,8 +94,6 @@ class Connection
     public static function getFacebookSession()
     {
         if (isset(static::$facebook_session)) return static::$facebook_session;
-
-        FacebookSession::setDefaultApplication(static::$app_id, static::$app_secret);
 
         return static::$facebook_session = new FacebookSession(static::$access_token);
     }
@@ -152,8 +153,6 @@ class Connection
      */
     public function send($path, $method = 'GET', array $params = [])
     {
-        //dd($path);
-
         try
         {
             $request = $this->facebook_request->make(static::getFacebookSession(), $method, $path, $params);

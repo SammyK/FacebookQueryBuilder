@@ -16,13 +16,24 @@ FQB::setAccessToken($config['app_id'] . '|' . $config['app_secret']);
 try
 {
     $users = $fqb->object($config['app_id'] . '/accounts/test-users')->fields('id','login_url')->limit(10)->get();
-
-    $users->each(function ($v)
-    {
-        var_dump($v->toArray());
-    });
 }
 catch (FacebookQueryBuilderException $e)
 {
+    echo '<p>Error: ' . $e->getMessage() . "\n\n";
+    echo '<p>Facebook SDK Said: ' . $e->getPrevious()->getMessage() . "\n\n";
+    echo '<p>Graph Said: ' .  "\n\n";
     var_dump($e->getResponse());
+    exit;
+}
+
+if (count($users) > 0)
+{
+    foreach ($users as $user)
+    {
+        var_dump($user->toArray());
+    }
+}
+else
+{
+    echo 'No test users returned for app ID ' . $config['app_id'] . "\n\n";
 }

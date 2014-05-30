@@ -17,6 +17,13 @@ class FQBTest extends PHPUnit_Framework_TestCase
         m::close();
     }
 
+    public function testCanGetInstanceOfAuth()
+    {
+        $auth = $this->fqb->auth();
+
+        $this->assertInstanceOf('SammyK\FacebookQueryBuilder\Auth', $auth);
+    }
+
     public function testCanInstantiateRootEdgeDynamically()
     {
         $edge = $this->fqb->object('foo');

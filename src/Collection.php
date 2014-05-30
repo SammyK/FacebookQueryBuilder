@@ -178,7 +178,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * Group an associative array by a field or Closure value.
      *
      * @param  callable|string  $groupBy
-     * @return \Illuminate\Support\Collection
+     * @return \SammyK\FacebookQueryBuilder\Collection
      */
     public function groupBy($groupBy)
     {
@@ -276,7 +276,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
     /**
      * Merge the collection with the given items.
      *
-     * @param  \SammyK\FacebookQueryBuilder\Collection|\Illuminate\Support\Contracts\ArrayableInterface|array  $items
+     * @param  \SammyK\FacebookQueryBuilder\Collection|array  $items
      * @return \SammyK\FacebookQueryBuilder\Collection
      */
     public function merge($items)
@@ -485,8 +485,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
     /**
      * Get the sum of the given values.
      *
-     * @param  \Closure  $callback
-     * @param  string  $callback
+     * @param  \Closure|string  $callback
      * @return mixed
      */
     public function sum($callback)

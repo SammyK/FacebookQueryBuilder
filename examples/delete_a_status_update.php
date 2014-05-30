@@ -14,15 +14,24 @@ try
     // First, create a status update that we can delete
     $status_update = ['message' => 'This status update won\'t last long! (That\'s what she said.)'];
     $response = $fqb->object('me/feed')->with($status_update)->post();
-    var_dump('Post Status Update Response:', $response);
+
+    echo '<h1>Post Status Update Response:</h1>' . "\n\n";
+    var_dump($response->toArray());
 
     $status_update_id = $response['id'];
 
     // BALETED!
     $response = $fqb->object($status_update_id)->delete();
-    var_dump('Delete Status Update Response:', $response);
+    echo '<h1>Delete Status Update Response:</h1>' . "\n\n";
+    var_dump($response->toArray());
 }
 catch (FacebookQueryBuilderException $e)
 {
+    echo '<p>Oops! Make sure you have the "publish_actions" extended permission for this access token.' . "\n\n";
+
+    echo '<p>Error: ' . $e->getMessage() . "\n\n";
+    echo '<p>Facebook SDK Said: ' . $e->getPrevious()->getMessage() . "\n\n";
+    echo '<p>Graph Said: ' .  "\n\n";
     var_dump($e->getResponse());
+    exit;
 }

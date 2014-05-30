@@ -1,5 +1,7 @@
 <?php namespace SammyK\FacebookQueryBuilder;
 
+use Facebook\FacebookSession;
+
 class FQB
 {
     /**
@@ -8,6 +10,13 @@ class FQB
      * @var \SammyK\FacebookQueryBuilder\RootEdge
      */
     public $root_edge;
+
+    /**
+     * The authentication helper object.
+     *
+     * @var \SammyK\FacebookQueryBuilder\Auth
+     */
+    protected static $auth;
 
     /**
      * The connection to the Facebook Graph API.
@@ -66,6 +75,16 @@ class FQB
     public static function setAccessToken($access_token)
     {
         static::getConnection()->setAccessToken($access_token);
+    }
+
+    /**
+     * Sets the FacebookSession to be used for all API requests.
+     *
+     * @param \Facebook\FacebookSession $facebook_session
+     */
+    public static function setFacebookSession(FacebookSession $facebook_session)
+    {
+        static::getConnection()->setFacebookSession($facebook_session);
     }
 
     /**
@@ -143,6 +162,18 @@ class FQB
         $this->post_data = $data;
 
         return $this;
+    }
+
+    /**
+     * Get the authentication helper object.
+     *
+     * @return \SammyK\FacebookQueryBuilder\Auth
+     */
+    public function auth()
+    {
+        if (isset(static::$auth)) return static::$auth;
+
+        return static::$auth = new Auth();
     }
 
     /**
