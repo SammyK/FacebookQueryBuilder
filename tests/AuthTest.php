@@ -17,7 +17,8 @@ class AuthTest extends PHPUnit_Framework_TestCase
         m::close();
     }
 
-    public function testCanGetLoginUrl()
+    /** @test */
+    public function can_get_a_login_url_from_the_facebook_sdk_redirect_helper()
     {
         $fb_redirect_helper = m::mock('Facebook\FacebookRedirectLoginHelper');
 
@@ -32,7 +33,8 @@ class AuthTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('http://bar', $login_url);
     }
 
-    public function testCanGetTokenFromRedirect()
+    /** @test */
+    public function can_obtain_an_access_token_object_from_a_redirect()
     {
         $fb_redirect_helper = m::mock('Facebook\FacebookRedirectLoginHelper');
         $fb_session = m::mock('Facebook\FacebookSession');
@@ -49,10 +51,11 @@ class AuthTest extends PHPUnit_Framework_TestCase
         $this->auth->setRedirectHelper($fb_redirect_helper);
         $token = $this->auth->getTokenFromRedirect('http://foo');
 
-        $this->assertEquals('foo', $token);
+        $this->assertInstanceOf('SammyK\FacebookQueryBuilder\AccessToken', $token);
     }
 
-    public function testCanGetTokenFromCanvas()
+    /** @test */
+    public function can_obtain_an_access_token_object_from_the_canvas()
     {
         $fb_canvas_helper = m::mock('Facebook\FacebookCanvasLoginHelper');
         $fb_session = m::mock('Facebook\FacebookSession');
@@ -69,10 +72,11 @@ class AuthTest extends PHPUnit_Framework_TestCase
         $this->auth->setCanvasHelper($fb_canvas_helper);
         $token = $this->auth->getTokenFromCanvas();
 
-        $this->assertEquals('foo', $token);
+        $this->assertInstanceOf('SammyK\FacebookQueryBuilder\AccessToken', $token);
     }
 
-    public function getTokenFromJavascript()
+    /** @test */
+    public function can_obtain_an_access_token_object_from_the_cookie_set_by_the_javascript_sdk()
     {
         $fb_javascript_helper = m::mock('Facebook\FacebookJavaScriptLoginHelper');
         $fb_session = m::mock('Facebook\FacebookSession');
@@ -86,10 +90,10 @@ class AuthTest extends PHPUnit_Framework_TestCase
             ->once()
             ->andReturn($fb_session);
 
-        $this->auth->getJavascriptHelper($fb_javascript_helper);
+        $this->auth->setJavascriptHelper($fb_javascript_helper);
         $token = $this->auth->getTokenFromJavascript();
 
-        $this->assertEquals('foo', $token);
+        $this->assertInstanceOf('SammyK\FacebookQueryBuilder\AccessToken', $token);
     }
 
 }

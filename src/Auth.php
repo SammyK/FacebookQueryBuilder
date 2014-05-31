@@ -113,7 +113,7 @@ class Auth
      *
      * @param string $redirect_url
      *
-     * @return string|null
+     * @return AccessToken|null
      *
      * @throws FacebookQueryBuilderException
      */
@@ -128,13 +128,13 @@ class Auth
             throw new FacebookQueryBuilderException('Unable to obtain access token from redirect', 100, $e);
         }
 
-        return $session ? $session->getToken() : null;
+        return $session ? new AccessToken($session->getToken()) : null;
     }
 
     /**
      * Gets an access token from a canvas context.
      *
-     * @return string
+     * @return AccessToken|null
      *
      * @throws FacebookQueryBuilderException
      */
@@ -149,13 +149,13 @@ class Auth
             throw new FacebookQueryBuilderException('Unable to obtain access token from canvas', 100, $e);
         }
 
-        return $session->getToken();
+        return $session ? new AccessToken($session->getToken()) : null;
     }
 
     /**
      * Gets an access token from the Javascript SDK.
      *
-     * @return string
+     * @return AccessToken|null
      *
      * @throws FacebookQueryBuilderException
      */
@@ -170,7 +170,7 @@ class Auth
             throw new FacebookQueryBuilderException('Unable to obtain access token from Javascript', 100, $e);
         }
 
-        return $session->getToken();
+        return $session ? new AccessToken($session->getToken()) : null;
     }
 
 }

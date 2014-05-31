@@ -7,7 +7,7 @@ class FacebookQueryBuilderException extends \Exception
     /**
      * Response object.
      *
-     * @var \SammyK\FacebookQueryBuilder\Collection
+     * @var Response
      */
     protected $response;
 
@@ -25,7 +25,7 @@ class FacebookQueryBuilderException extends \Exception
      * @param int $code
      * @param \Exception|null $previous
      */
-    public function __construct($e, $code = 0, $previous = null)
+    public function __construct($e, $code = 0, \Exception $previous = null)
     {
         if ($e instanceof FacebookRequestException)
         {
@@ -33,7 +33,7 @@ class FacebookQueryBuilderException extends \Exception
 
             $this->type = $e->getErrorType();
 
-            parent::__construct('Error communicating with Facebook: ' . $e->getMessage(), $e->getCode(), $e);
+            parent::__construct('Graph returned an error response.', 10, $e);
 
             return;
         }
@@ -44,11 +44,11 @@ class FacebookQueryBuilderException extends \Exception
     /**
      * Get the response object
      *
-     * @return \SammyK\FacebookQueryBuilder\Collection
+     * @return Response
      */
     public function getResponse()
     {
-        return $this->response->getResponse();
+        return $this->response instanceof Response ? $this->response->getResponse() : null;
     }
 
     /**
@@ -68,7 +68,7 @@ class FacebookQueryBuilderException extends \Exception
      */
     public function errorSummary()
     {
-        $code = $this->getCode();
+        $code = $this->getPrevious()->getCode();
 
         switch ($code)
         {
@@ -124,7 +124,7 @@ class FacebookQueryBuilderException extends \Exception
      */
     public function detectRequiredPermissions()
     {
-        if (preg_match('/\(#[0-9]+\) Requires extended permission: (.+)/', $this->getMessage(), $a) === 1)
+        if (preg_match('/\(#[0-9]+\) Requires extended permission: (.+)/', $this->getPrevious()->getMessage(), $a) === 1)
         {
             return [$a[1]];
         }

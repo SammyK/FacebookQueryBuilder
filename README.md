@@ -14,6 +14,7 @@ $user = $fqb->object('me')->get();
 - [Installation](#installation)
 - [Usage](#usage)
     - [Obtaining An Access Token](#obtaining-an-access-token)
+    - [The AccessToken Object](#the-accesstoken-object)
     - [Setting The Access Token Or FacebookSession](#setting-the-access-token-or-facebooksession)
     - [Examples](#examples)
     - [Method Reference](#method-reference)
@@ -62,6 +63,8 @@ $fqb = new FQB();
 ## Obtaining An Access Token
 
 Most calls to Graph require an access token. There are three ways to obtain an access token.
+
+Access tokens are returned in the form of an `AccessToken` object.
 
 
 ### From A Redirect
@@ -129,17 +132,66 @@ catch (FacebookQueryBuilderException $e)
 ```
 
 
+## The AccessToken Object
+
+By default access tokens will last for about 2 hours. You can exchange them for longer-lived tokens that last for about 60 days.
+
+See a full example in the [obtaining an access token from redirect](https://github.com/SammyK/FacebookQueryBuilder/blob/master/examples/get_access_token_from_redirect.php) example file.
+
+
+## Checking Access Token Life
+
+```php
+if ( ! $access_token->isLongLived())
+{
+    // Extend the short-lived token
+}
+```
+
+
+## Extending An Access Token
+
+```php
+try
+{
+    $long_lived_token = $short_lived_token->extend();
+}
+catch (FacebookQueryBuilderException $e)
+{
+    // Failed to extend access token
+    echo 'Error:' . $e->getMessage();
+}
+```
+
+
+## Getting Info About An Access Token
+
+```php
+try
+{
+    $token_info = $access_token->getInfo();
+}
+catch (FacebookQueryBuilderException $e)
+{
+    // Failed to get access token info
+    echo 'Error:' . $e->getMessage();
+}
+```
+
+
 ## Setting The Access Token Or FacebookSession
 
-If you have already obtained an access token, you can set it like so:
+Setting the access token will new up a `FacebookSession` internally and automatically send it with all Graph calls.
+
+You can set the access token from a string or an `AccessToken` object.
 
 ```php
 FQB::setAccessToken('access_token');
+// -- OR --
+FQB::setAccessToken($access_token_object);
 ```
 
-Doing so will new up a `FacebookSession` internally and automatically send it with all Graph calls.
-
-Alternatively, if you already have a `FacebookSession` object, you can set it like so:
+Alternatively, if you already have a `FacebookSession` object directly from the Facebook SDK, you can set it like so:
 
 ```php
 FQB::setFacebookSession($facebook_session);

@@ -70,7 +70,7 @@ class FQB
     /**
      * Sets the access token to be used for all API requests.
      *
-     * @param string $access_token
+     * @param AccessToken|string $access_token
      */
     public static function setAccessToken($access_token)
     {

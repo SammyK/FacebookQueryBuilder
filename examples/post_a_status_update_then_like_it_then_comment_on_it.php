@@ -14,20 +14,20 @@ try
     // Post the status update
     $status_update = ['message' => 'My witty status update.'];
     $response = $fqb->object('me/feed')->with($status_update)->post();
-    echo '<h1>Post Status Update Response:</h1>' . "\n\n";
+    echo '<h1>Post Status Update Response</h1>' . "\n\n";
     var_dump($response->toArray());
 
     $status_update_id = $response['id'];
 
     // Like it!
     $response = $fqb->object($status_update_id . '/likes')->post();
-    echo '<h1>Like Status Update Response:</h1>' . "\n\n";
+    echo '<h1>Like Status Update Response</h1>' . "\n\n";
     var_dump($response->toArray());
 
     // Comment on it
     $comment = ['message' => 'My witty comment on your status update.'];
     $response = $fqb->object($status_update_id . '/comments')->with($comment)->post();
-    echo '<h1>Post Comment Response:</h1>' . "\n\n";
+    echo '<h1>Post Comment Response</h1>' . "\n\n";
     var_dump($response->toArray());
 }
 catch (FacebookQueryBuilderException $e)

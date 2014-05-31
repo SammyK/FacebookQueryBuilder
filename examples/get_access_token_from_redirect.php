@@ -28,8 +28,66 @@ if ( ! $token)
     exit;
 }
 
-echo '<h1>Access Token</h1>' . "\n\n";
+echo '<h1>Returned AccessToken Object</h1>' . "\n\n";
 var_dump($token);
+
+/**
+ * Get info about the access token.
+ */
+try
+{
+    $token_info = $token->getInfo();
+}
+catch (FacebookQueryBuilderException $e)
+{
+    echo '<p>Error: ' . $e->getMessage() . "\n\n";
+    echo '<p>Facebook SDK Said: ' . $e->getPrevious()->getMessage() . "\n\n";
+    echo '<p>Graph Said: ' .  "\n\n";
+    var_dump($e->getResponse());
+    exit;
+}
+
+var_dump($token_info->toArray());
+
+if ( ! $token->isLongLived())
+{
+    /**
+     * Extend the access token.
+     */
+    try
+    {
+        $token = $token->extend();
+    }
+    catch (FacebookQueryBuilderException $e)
+    {
+        echo '<p>Error: ' . $e->getMessage() . "\n\n";
+        echo '<p>Facebook SDK Said: ' . $e->getPrevious()->getMessage() . "\n\n";
+        echo '<p>Graph Said: ' .  "\n\n";
+        var_dump($e->getResponse());
+        exit;
+    }
+
+    echo '<h1>Long-lived AccessToken Object</h1>' . "\n\n";
+    var_dump($token);
+
+    /**
+     * Get info about the access token.
+     */
+    try
+    {
+        $token_info = $token->getInfo();
+    }
+    catch (FacebookQueryBuilderException $e)
+    {
+        echo '<p>Error: ' . $e->getMessage() . "\n\n";
+        echo '<p>Facebook SDK Said: ' . $e->getPrevious()->getMessage() . "\n\n";
+        echo '<p>Graph Said: ' .  "\n\n";
+        var_dump($e->getResponse());
+        exit;
+    }
+
+    var_dump($token_info->toArray());
+}
 
 FQB::setAccessToken($token);
 

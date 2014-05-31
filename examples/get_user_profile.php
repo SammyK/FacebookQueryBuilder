@@ -20,4 +20,5 @@ catch (FacebookQueryBuilderException $e)
     exit;
 }
 
-var_dump($user);
+echo '<h1>Logged In User\'s Profile</h1>' . "\n\n";
+var_dump($user->toArray());

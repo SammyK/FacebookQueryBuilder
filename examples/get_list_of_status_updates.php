@@ -24,7 +24,7 @@ catch (FacebookQueryBuilderException $e)
 
 if (count($statuses) > 0)
 {
-    echo '<h1>Last 10 Statuses Response:</h1>' . "\n\n";
+    echo '<h1>Last 10 Statuses Response</h1>' . "\n\n";
     foreach ($statuses as $status)
     {
         var_dump($status['message']);

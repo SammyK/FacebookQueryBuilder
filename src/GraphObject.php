@@ -15,6 +15,8 @@ class GraphObject extends Collection
         'start_time',
         'end_time',
         'backdated_time',
+        'issued_at',
+        'expires_at',
     ];
 
     /**
@@ -38,7 +40,7 @@ class GraphObject extends Collection
             }
             elseif (in_array($k, $this->cast_to_carbon, true))
             {
-                $items[$k] = new Carbon($v);
+                $items[$k] = is_int($v) ? Carbon::createFromTimeStamp($v) : new Carbon($v);
             }
             else
             {

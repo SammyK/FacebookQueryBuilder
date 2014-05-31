@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## 1.0.4 - May 30, 2014
+
+- Added `AccessToken` objects that do cool stuffs.
+- Better support of Graph responses.
+- Even better exception handling.
+- Tweaked the examples for clarity.
+
+
 ## 1.0.3 - May 30, 2014
 
 - Added feature to obtain an access token via redirect, canvas or Javascript.

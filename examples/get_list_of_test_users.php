@@ -28,6 +28,7 @@ catch (FacebookQueryBuilderException $e)
 
 if (count($users) > 0)
 {
+    echo '<h1>Test Users For App ID ' .  $config['app_id']  . '</h1>' . "\n\n";
     foreach ($users as $user)
     {
         var_dump($user->toArray());
