@@ -103,9 +103,9 @@ class Auth
      *
      * @return string
      */
-    public function getLoginUrl($redirect_url)
+    public function getLoginUrl($redirect_url, $scope  = array())
     {
-        return static::getRedirectHelper($redirect_url)->getLoginUrl();
+        return static::getRedirectHelper($redirect_url)->getLoginUrl($scope);
     }
 
     /**
