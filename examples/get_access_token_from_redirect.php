@@ -23,7 +23,8 @@ if ( ! $token)
     /**
      * No token returned. Show login link.
      */
-    $login_url = $fqb->auth()->getLoginUrl($config['callback_url']);
+    $scope = ['email', 'read_stream']; // Optional
+    $login_url = $fqb->auth()->getLoginUrl($config['callback_url'], $scope);
     echo '<a href="' . $login_url . '">Log in with Facebook</a>';
     exit;
 }

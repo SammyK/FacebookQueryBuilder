@@ -1,6 +1,11 @@
 # CHANGELOG
 
 
+## 1.0.5 - June 2, 2014
+
+- Added support for the scope array in `getLoginUrl()`.
+
+
 ## 1.0.4 - May 30, 2014
 
 - Added `AccessToken` objects that do cool stuffs.

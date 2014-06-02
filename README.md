@@ -91,6 +91,13 @@ catch (FacebookQueryBuilderException $e)
 }
 ```
 
+You can optionally send in an array of permissions to request.
+
+```php
+$scope = ['email', 'user_status'];
+$login_url = $fqb->auth()->getLoginUrl('http://my-callback/url', $scope);
+```
+
 See a full example of [obtaining an access token from redirect](https://github.com/SammyK/FacebookQueryBuilder/blob/master/examples/get_access_token_from_redirect.php).
 
 

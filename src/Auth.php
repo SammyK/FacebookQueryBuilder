@@ -100,10 +100,11 @@ class Auth
      * Gets a login URL.
      *
      * @param string $redirect_url
+     * @param array $scope
      *
      * @return string
      */
-    public function getLoginUrl($redirect_url, $scope  = array())
+    public function getLoginUrl($redirect_url, array $scope = [])
     {
         return static::getRedirectHelper($redirect_url)->getLoginUrl($scope);
     }
