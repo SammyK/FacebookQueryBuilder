@@ -2,7 +2,7 @@
     "name": "nguyenvanduocit/facebook-query-builder",
     "description": "An elegant and efficient way to interface with Facebook's Graph API",
     "keywords": ["facebook", "sdk", "graph api"],
-    "homepage": "https://github.com/SammyK/FacebookQueryBuilder",
+    "homepage": "https://github.com/nguyenvanduocit/FacebookQueryBuilder",
     "license": "MIT",
     "authors": [
         {
@@ -22,7 +22,7 @@
     },
     "autoload": {
         "psr-4": {
-            "SammyK\\FacebookQueryBuilder\\": "src"
+            "nguyenvanduocit\\FacebookQueryBuilder\\": "src"
         }
     }
 }
