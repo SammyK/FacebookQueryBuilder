@@ -1,6 +1,11 @@
 # CHANGELOG
 
 
+## 1.0.6 - June 6, 2014
+
+- Added ability to alias a custom `\Facebook\FacebookRedirectLoginHelper` with `FQB::setRedirectHelperAlias('MyCustomClass')`.
+
+
 ## 1.0.5 - June 2, 2014
 
 - Added support for the scope array in `getLoginUrl()`.

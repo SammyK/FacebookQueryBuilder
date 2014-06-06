@@ -93,6 +93,16 @@ class FQB
     }
 
     /**
+     * The name of a custom class that extends the \Facebook\FacebookRedirectLoginHelper
+     *
+     * @param string $redirect_helper_alias
+     */
+    public static function setRedirectHelperAlias($redirect_helper_alias)
+    {
+        Auth::setRedirectHelperAlias($redirect_helper_alias);
+    }
+
+    /**
      * Send GET request to Facebook Graph API.
      *
      * @param array $fields The fields we want on the root edge

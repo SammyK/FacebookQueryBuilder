@@ -20,6 +20,7 @@ $user = $fqb->object('me')->get();
     - [Method Reference](#method-reference)
     - [Request Objects](#request-objects)
     - [Response Objects](#response-objects)
+- [Overwriting Persistent Storage](#overwriting-persistent-storage)
 - [Testing](#testing)
 - [TODO](#todo)
 - [Contributing](#contributing)
@@ -498,6 +499,34 @@ catch (FacebookQueryBuilderException $e)
 
     echo 'Oops! Graph said: ' . $graph_error['message'];
 }
+```
+
+
+## Overwriting Persistent Storage
+
+If you try to use the `getLoginUrl()` or `getTokenFromRedirect()` and you're getting a `FacebookSDKException` with the following error:
+
+    Session not active, could not store state.
+
+Then you've fallen victim to the annoying persistent data storage issue that [hasn't been fixed yet](https://github.com/facebook/facebook-php-sdk-v4/pull/44). So you'll need to implement your own class that overwrites the persistent storage found in the `\Facebook\FacebookRedirectLoginHelper`.
+
+For example a Laravel implementation would look like the following.
+
+```php
+class LaravelFacebookRedirectLoginHelper extends \Facebook\FacebookRedirectLoginHelper
+{
+    protected function storeState($state)
+    {
+        Session::put('state', $state);
+    }
+
+    protected function loadState()
+    {
+        return $this->state = Session::get('state');
+    }
+}
+
+FQB::setRedirectHelperAlias('LaravelFacebookRedirectLoginHelper');
 ```
 
 

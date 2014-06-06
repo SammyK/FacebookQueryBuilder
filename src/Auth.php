@@ -15,6 +15,13 @@ class Auth
     protected static $redirect_helper;
 
     /**
+     * The class name of the setRedirectHelperAlias
+     *
+     * @var \Facebook\FacebookRedirectLoginHelper
+     */
+    protected static $redirect_helper_alias = '\Facebook\FacebookRedirectLoginHelper';
+
+    /**
      * The Facebook redirect helper object.
      *
      * @var \Facebook\FacebookCanvasLoginHelper
@@ -39,7 +46,7 @@ class Auth
     {
         if (isset(static::$redirect_helper)) return static::$redirect_helper;
 
-        return static::$redirect_helper = new FacebookRedirectLoginHelper($redirect_url);
+        return static::$redirect_helper = new static::$redirect_helper_alias($redirect_url);
     }
 
     /**
@@ -50,6 +57,16 @@ class Auth
     public static function setRedirectHelper(FacebookRedirectLoginHelper $redirect_helper)
     {
         static::$redirect_helper = $redirect_helper;
+    }
+
+    /**
+     * The name of a custom class that extends the \Facebook\FacebookRedirectLoginHelper
+     *
+     * @param string $redirect_helper_alias
+     */
+    public static function setRedirectHelperAlias($redirect_helper_alias)
+    {
+        static::$redirect_helper_alias = $redirect_helper_alias;
     }
 
     /**

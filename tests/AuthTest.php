@@ -3,6 +3,14 @@
 use Mockery as m;
 use SammyK\FacebookQueryBuilder\Auth;
 
+class MyCustomFooFacebookRedirectLoginHelper extends \Facebook\FacebookRedirectLoginHelper
+{
+    public function foo()
+    {
+        return 'bar';
+    }
+}
+
 class AuthTest extends PHPUnit_Framework_TestCase
 {
     protected $auth;
@@ -15,6 +23,16 @@ class AuthTest extends PHPUnit_Framework_TestCase
     public function tearDown()
     {
         m::close();
+    }
+
+    /** @test */
+    public function the_facebook_sdk_redirect_helper_can_be_overwritten()
+    {
+        Auth::setRedirectHelperAlias('MyCustomFooFacebookRedirectLoginHelper');
+
+        $data = Auth::getRedirectHelper('http://foo')->foo();
+
+        $this->assertEquals('bar', $data);
     }
 
     /** @test */
