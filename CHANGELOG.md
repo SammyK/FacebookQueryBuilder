@@ -1,6 +1,13 @@
 # CHANGELOG
 
 
+## 1.0.7 - June 10, 2014
+
+- Added `search()` method to easily search Graph.
+- Expanded the `with()` method to send modifiers on GET requests.
+- Refactored how data from Graph is cast as collection objects to handle even more response variations.
+
+
 ## 1.0.6 - June 6, 2014
 
 - Added ability to alias a custom `\Facebook\FacebookRedirectLoginHelper` with `FQB::setRedirectHelperAlias('MyCustomClass')`.

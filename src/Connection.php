@@ -157,7 +157,7 @@ class Connection
      *
      * @return \SammyK\FacebookQueryBuilder\Response
      */
-    public function post(RootEdge $root_edge, $data)
+    public function post(RootEdge $root_edge, $data = [])
     {
         return $this->send((string) $root_edge, 'POST', $data);
     }
@@ -166,12 +166,13 @@ class Connection
      * Send DELETE request to Facebook API.
      *
      * @param \SammyK\FacebookQueryBuilder\RootEdge $root_edge
+     * @param array $data
      *
      * @return \SammyK\FacebookQueryBuilder\Response
      */
-    public function delete(RootEdge $root_edge)
+    public function delete(RootEdge $root_edge, $data = [])
     {
-        return $this->send((string) $root_edge, 'DELETE');
+        return $this->send((string) $root_edge, 'DELETE', $data);
     }
 
     /**

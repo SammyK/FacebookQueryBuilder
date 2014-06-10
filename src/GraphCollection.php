@@ -1,9 +1,9 @@
 <?php namespace SammyK\FacebookQueryBuilder;
 
-class GraphCollection extends Collection
+class GraphCollection extends BaseGraphObject
 {
     /**
-     * Init this Graph collection as a collection
+     * Init this Graph object
      *
      * @param array $data
      */
@@ -11,14 +11,9 @@ class GraphCollection extends Collection
     {
         if ( ! isset($data['data'])) return;
 
-        $collection = [];
+        // @TODO: Look for meta data here
 
-        foreach ($data['data'] as $graph_object)
-        {
-            $collection[] = new GraphObject($graph_object);
-        }
-
-        parent::__construct($collection);
+        parent::__construct($data['data']);
     }
 
     /**
@@ -42,4 +37,5 @@ class GraphCollection extends Collection
     public function previous()
     {
     }
+
 }

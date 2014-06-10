@@ -10,11 +10,18 @@ class Edge
     public $name;
 
     /**
-     * The fields & edges that we want to pull from the edge
+     * The fields & edges that we want to pull from the edge.
      *
      * @var array
      */
-    public $fields;
+    public $fields = [];
+
+    /**
+     * The modifiers that will be appended to the edge.
+     *
+     * @var array
+     */
+    public $modifiers = [];
 
     /**
      * The maximum number of records to return for this edge.
@@ -76,6 +83,40 @@ class Edge
     }
 
     /**
+     * Modifier data to be sent with this edge.
+     *
+     * @param array $data
+     * @return \SammyK\FacebookQueryBuilder\Edge
+     */
+    public function with(array $data)
+    {
+        $this->modifiers = array_merge($this->modifiers, $data);
+
+        return $this;
+    }
+
+    /**
+     * Compile the modifier values.
+     *
+     * @return string
+     */
+    public function compileModifiers()
+    {
+        if (count($this->modifiers) === 0) return '';
+
+        $processed_modifiers = [];
+
+        foreach ($this->modifiers as $k => $v)
+        {
+            $processed_modifiers[] = $k . '(' . $v . ')';
+        }
+
+        $modifiers = implode('.', $processed_modifiers);
+
+        return $modifiers ? '.' . $modifiers : '';
+    }
+
+    /**
      * Compile the field values.
      *
      * @return string
@@ -111,7 +152,7 @@ class Edge
      */
     public function compileEdge()
     {
-        return $this->name . $this->compileLimit() . $this->compileFields();
+        return $this->name . $this->compileLimit() . $this->compileFields() . $this->compileModifiers();
     }
 
     /**

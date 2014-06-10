@@ -31,11 +31,12 @@ class FQB
     protected static $connection;
 
     /**
-     * Data to be sent to Graph with POST request.
+     * Data that will be sent in the body of a POST or DELETE request
+     * and in the URL query params for GET requests.
      *
      * @var array
      */
-    public $post_data = [];
+    public $modifiers = [];
 
     /**
      * New up a new RootEdge instance.
@@ -106,13 +107,32 @@ class FQB
      * Send GET request to Facebook Graph API.
      *
      * @param array $fields The fields we want on the root edge
+     *
      * @return \SammyK\FacebookQueryBuilder\Collection
      */
     public function get(array $fields = [])
     {
-        $this->root_edge->fields($fields);
+        $this->prepareRootEdgeForGetRequest($fields);
 
         return static::getConnection()->get($this->root_edge)->getResponse();
+    }
+
+    /**
+     * Prepare the root edge for a GET request.
+     *
+     * @param array $fields The fields we want on the root edge
+     */
+    public function prepareRootEdgeForGetRequest(array $fields = [])
+    {
+        if (count($fields) > 0)
+        {
+            $this->root_edge->fields($fields);
+        }
+
+        if (count($this->modifiers) > 0)
+        {
+            $this->root_edge->with($this->modifiers);
+        }
     }
 
     /**
@@ -122,7 +142,7 @@ class FQB
      */
     public function post()
     {
-        return static::getConnection()->post($this->root_edge, $this->post_data)->getResponse();
+        return static::getConnection()->post($this->root_edge, $this->modifiers)->getResponse();
     }
 
     /**
@@ -132,13 +152,34 @@ class FQB
      */
     public function delete()
     {
-        return static::getConnection()->delete($this->root_edge)->getResponse();
+        return static::getConnection()->delete($this->root_edge, $this->modifiers)->getResponse();
+    }
+
+    /**
+     * Convenience method for searching Graph.
+     *
+     * @param string $search
+     * @param string $type
+     *
+     * @return \SammyK\FacebookQueryBuilder\FQB
+     */
+    public function search($search, $type = null)
+    {
+        $fqb = $this->object('search')->with(['q' => $search]);
+
+        if ($type)
+        {
+            $fqb->with(['type' => $type]);
+        }
+
+        return $fqb;
     }
 
     /**
      * Alias to RootEdge
      *
      * @param int $limit
+     *
      * @return \SammyK\FacebookQueryBuilder\FQB
      */
     public function limit($limit)
@@ -152,6 +193,7 @@ class FQB
      * Alias to RootEdge
      *
      * @param array|string $fields The fields we want on the root edge
+     *
      * @return \SammyK\FacebookQueryBuilder\FQB
      */
     public function fields($fields)
@@ -167,14 +209,16 @@ class FQB
     }
 
     /**
-     * Data to be sent to Graph with POST request.
+     * Data that will be sent in the body of a POST or DELETE request
+     * and in the URL query params for GET requests.
      *
      * @param array $data
+     *
      * @return \SammyK\FacebookQueryBuilder\FQB
      */
     public function with(array $data)
     {
-        $this->post_data = $data;
+        $this->modifiers = array_merge($this->modifiers, $data);
 
         return $this;
     }
@@ -207,7 +251,6 @@ class FQB
      * Set the connection to Facebook.
      *
      * @param \SammyK\FacebookQueryBuilder\Connection $connection
-     * @return void
      */
     public static function setConnection(Connection $connection)
     {
@@ -219,6 +262,7 @@ class FQB
      *
      * @param array $fields The fields we want on the edge
      * @param string $edge_name
+     *
      * @return \SammyK\FacebookQueryBuilder\Edge
      */
     public function edge($edge_name, array $fields = [])
@@ -231,6 +275,7 @@ class FQB
      *
      * @param string $edge_name The edge name
      * @param array $fields The fields we want on the root edge
+     *
      * @return \SammyK\FacebookQueryBuilder\FQB
      */
     public function object($edge_name, array $fields = [])

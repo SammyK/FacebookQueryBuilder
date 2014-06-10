@@ -320,12 +320,12 @@ $response = $fqb->object('photo_id/likes')->delete();
 ```
 
 
-### edge(*string* "edge_name")
+### edge(**string** "edge_name")
 
 Returns an `Edge` value object to be passed to the `fields()` method.
 
 
-### fields(*array|string* "list of fields or edges")
+### fields(**array|string** "list of fields or edges")
 
 Set the fields and edges for this `Edge`. The fields and edges can be passed as an array or list of arguments.
 
@@ -337,7 +337,7 @@ $obj = $fqb->object('some_object')->fields('some_field', $edge_one, $edge_two)->
 ```
 
 
-### limit(*int* "number of results to return")
+### limit(**int** "number of results to return")
 
 Limit the number of results returned from Graph.
 
@@ -346,9 +346,11 @@ $edge = $fqb->edge('some_list_edge')->limit(7);
 ```
 
 
-### with(*array* "data to post or update")
+### with(**array** "data for body or request or modifiers")
 
-Used only in conjunction with the `post()` method. The array should be an associative array. The key should be the name of the field as defined by Facebook.
+The array should be an associative array. The key should be the name of the field as defined by Facebook.
+
+If used in conjunction with the `post()` or `delete()` methods, the data will be sent in the body of the request.
 
 ```php
 // Post a new comment to a photo
@@ -361,6 +363,36 @@ $comment_data = ['message' => 'My updated comment.'];
 
 $response = $fqb->object('comment_id')->with($comment_data)->post();
 ```
+
+If used in conjunction with a `get()` request, the data will be appended in the URL either in the sub edge or root edge.
+
+```php
+// Get the large version of a page profile picture
+$profile_picture = $fqb->edge('picture')->with(['type' => 'large']);
+$page_info = $fqb->object('some_page_id')->fields('name', $profile_picture)->get();
+```
+
+
+### search(**string** "search query"[, **string** "type of object to search"])
+
+You can easily search Graph with the `search()` method.
+
+The first argument is your search query. The second argument is the optional type of Graph object you are searching for. See the [Facebook documentation for a full list of supported search objects](https://developers.facebook.com/docs/graph-api/using-graph-api/v2.0#searchtypes).
+
+```php
+// Search for users named Bill
+$list_of_users = $fqb->search('Bill', 'user')->get();
+
+// Search for coffee joints near San Fransisco
+$list_of_locations = $fqb->search('coffee', 'place')
+    ->with([
+        'center' => '37.76,-122.427',
+        'distance' => '1000'
+    ])
+    ->get();
+```
+
+See more [search examples](https://github.com/SammyK/FacebookQueryBuilder/tree/master/examples/search_graph.php).
 
 
 ## Request Objects

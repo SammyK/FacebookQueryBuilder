@@ -4,14 +4,16 @@ use SammyK\FacebookQueryBuilder\Edge;
 
 class EdgeTest extends PHPUnit_Framework_TestCase
 {
-    public function testOnlyNeedsEdgeNameToInstantiate()
+    /** @test */
+    public function the_edge_can_instantiate_with_just_the_edge_name()
     {
         $edge = new Edge('foo');
 
         $this->assertInstanceOf('SammyK\FacebookQueryBuilder\Edge', $edge);
     }
 
-    public function testLimitSetter()
+    /** @test */
+    public function the_limit_gets_set_properly()
     {
         $edge = new Edge('foo');
         $edge->limit(5);
@@ -19,7 +21,8 @@ class EdgeTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(5, $edge->limit);
     }
 
-    public function testFieldsSetterFromArray()
+    /** @test */
+    public function the_fields_can_be_set_by_sending_an_array()
     {
         $edge = new Edge('foo');
         $edge->fields(['bar', 'baz']);
@@ -27,7 +30,8 @@ class EdgeTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(['bar', 'baz'], $edge->fields);
     }
 
-    public function testFieldsSetterFromArguments()
+    /** @test */
+    public function the_fields_can_be_set_from_constructor_arguments()
     {
         $edge = new Edge('foo');
         $edge->fields('bar', 'baz');
@@ -35,7 +39,8 @@ class EdgeTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(['bar', 'baz'], $edge->fields);
     }
 
-    public function testMergesExistingFields()
+    /** @test */
+    public function new_fields_will_get_merged_into_existing_fields()
     {
         $edge = new Edge('foo', ['foo', 'bar']);
         $edge->fields('baz');
@@ -43,14 +48,46 @@ class EdgeTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(['foo', 'bar', 'baz'], $edge->fields);
     }
 
-    public function testConvertsSubEdgeToString()
+    /** @test */
+    public function the_modifiers_can_be_set_by_sending_an_array()
+    {
+        $edge = new Edge('foo');
+        $edge->with(['bar' => 'baz']);
+
+        $this->assertEquals(['bar' => 'baz'], $edge->modifiers);
+    }
+
+    /** @test */
+    public function modifiers_get_compiled_with_proper_syntax()
+    {
+        $edge = new Edge('foo');
+        $modifiers = $edge->compileModifiers();
+        $this->assertEquals('', $modifiers);
+
+        $edge2 = new Edge('bar');
+        $edge2->with(['bar' => 'baz']);
+        $modifiers2 = $edge2->compileModifiers();
+        $this->assertEquals('.bar(baz)', $modifiers2);
+
+        $edge3 = new Edge('baz');
+        $edge3->with([
+                'foo' => 'bar',
+                'faz' => 'baz',
+            ]);
+        $modifiers3 = $edge3->compileModifiers();
+        $this->assertEquals('.foo(bar).faz(baz)', $modifiers3);
+    }
+
+    /** @test */
+    public function an_edge_will_convert_to_string()
     {
         $edge = new Edge('foo');
 
         $this->assertEquals('foo', (string) $edge);
     }
 
-    public function testConvertsSubEdgeWithFieldsToString()
+    /** @test */
+    public function an_edge_with_fields_will_convert_to_string()
     {
         $edge_one = new Edge('foo', ['bar']);
         $edge_two = new Edge('foo', ['bar', 'baz']);
@@ -59,14 +96,25 @@ class EdgeTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('foo.fields(bar,baz)', (string) $edge_two);
     }
 
-    public function testConvertsSubEdgeWithFieldsAndLimitToString()
+    /** @test */
+    public function an_edge_with_fields_and_limit_will_convert_to_string()
     {
         $edge = new Edge('foo', ['bar', 'baz'], 3);
 
         $this->assertEquals('foo.limit(3).fields(bar,baz)', (string) $edge);
     }
 
-    public function testCanNestOtherEdges()
+    /** @test */
+    public function an_edge_with_fields_and_limit_and_modifiers_will_convert_to_string()
+    {
+        $edge = new Edge('foo', ['bar', 'baz'], 3);
+        $edge->with(['foo' => 'bar']);
+
+        $this->assertEquals('foo.limit(3).fields(bar,baz).foo(bar)', (string) $edge);
+    }
+
+    /** @test */
+    public function an_edge_can_be_embedded_into_another_edge()
     {
         $edge_to_embed = new Edge('embeds', ['faz', 'boo'], 6);
         $edge = new Edge('foo', ['bar', 'baz', $edge_to_embed], 3);
@@ -74,7 +122,8 @@ class EdgeTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('foo.limit(3).fields(bar,baz,embeds.limit(6).fields(faz,boo))', (string) $edge);
     }
 
-    public function testCanDeeplyNestOtherEdges()
+    /** @test */
+    public function edges_can_be_embedded_into_other_edges_deeply()
     {
         $edge_level_one = new Edge('level_one', ['one', 'foo'], 1);
         $edge_level_two = new Edge('level_two', ['two', 'bar', $edge_level_one], 2);
@@ -91,7 +140,8 @@ class EdgeTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expected_edge, (string) $edge);
     }
 
-    public function testCanDeeplyNestMultipleOtherEdges()
+    /** @test */
+    public function multiple_edges_can_be_embedded_into_other_edges_deeply()
     {
         $edge_tags = new Edge('tags', [], 2);
 

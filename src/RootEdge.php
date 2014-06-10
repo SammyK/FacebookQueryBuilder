@@ -3,14 +3,14 @@
 class RootEdge extends Edge
 {
     /**
-     * Sets this as the root edge
+     * Sets this as the root edge.
      *
      * @var boolean
      */
     protected $is_root = true;
 
     /**
-     * Compiled values that are ready to be concatenated
+     * Compiled values that are ready to be concatenated.
      *
      * @var array
      */
@@ -18,28 +18,32 @@ class RootEdge extends Edge
 
     /**
      * Compile the field values.
-     *
-     * @return void
      */
     public function compileFields()
     {
-        if (count($this->fields) > 0)
-        {
-            $this->compiled_vales[] = 'fields=' . implode(',', $this->fields);
-        }
+        if (count($this->fields) === 0) return;
+
+        $this->compiled_vales[] = 'fields=' . implode(',', $this->fields);
     }
 
     /**
      * Compile the limit value.
-     *
-     * @return void
      */
     public function compileLimit()
     {
-        if ($this->limit > 0)
-        {
-            $this->compiled_vales[] = 'limit=' . $this->limit;
-        }
+        if ($this->limit === 0) return;
+
+        $this->compiled_vales[] = 'limit=' . $this->limit;
+    }
+
+    /**
+     * Compile the modifier values.
+     */
+    public function compileModifiers()
+    {
+        if (count($this->modifiers) === 0) return;
+
+        $this->compiled_vales[] = http_build_query($this->modifiers, '', '&');
     }
 
     /**
@@ -51,6 +55,7 @@ class RootEdge extends Edge
     {
         $this->compileLimit();
         $this->compileFields();
+        $this->compileModifiers();
 
         $append = '';
         if (count($this->compiled_vales) > 0)

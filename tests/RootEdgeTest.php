@@ -5,21 +5,24 @@ use SammyK\FacebookQueryBuilder\RootEdge;
 
 class RootEdgeTest extends PHPUnit_Framework_TestCase
 {
-    public function testOnlyNeedsEdgeNameToInstantiate()
+    /** @test */
+    public function the_root_edge_can_instantiate_with_just_the_edge_name()
     {
         $edge = new RootEdge('foo');
 
         $this->assertInstanceOf('SammyK\FacebookQueryBuilder\RootEdge', $edge);
     }
 
-    public function testConvertsRootEdgeToString()
+    /** @test */
+    public function the_root_edge_can_be_converted_to_a_string()
     {
         $edge = new RootEdge('foo');
 
         $this->assertEquals('/foo', (string) $edge);
     }
 
-    public function testConvertsRootEdgeWithFieldsToString()
+    /** @test */
+    public function the_root_edge_can_be_converted_to_a_string_with_fields()
     {
         $edge_one = new RootEdge('foo', ['bar']);
         $edge_two = new RootEdge('foo', ['bar', 'baz']);
@@ -28,14 +31,31 @@ class RootEdgeTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('/foo?fields=bar,baz', (string) $edge_two);
     }
 
-    public function testConvertsRootEdgeWithFieldsAndLimitToString()
+    /** @test */
+    public function the_root_edge_can_be_converted_to_a_string_with_fields_and_limit()
     {
         $edge = new RootEdge('foo', ['bar', 'baz'], 3);
 
         $this->assertEquals('/foo?limit=3&fields=bar,baz', (string) $edge);
     }
 
-    public function testCanEmbedOtherEdges()
+    /** @test */
+    public function the_root_edge_can_be_converted_to_a_string_with_fields_and_limit_and_modifiers()
+    {
+        $edge = new RootEdge('foo', ['bar', 'baz'], 3);
+        $edge->with(['foo' => 'bar']);
+        $this->assertEquals('/foo?limit=3&fields=bar,baz&foo=bar', (string) $edge);
+
+        $edge2 = new RootEdge('foo', ['bar', 'baz'], 3);
+        $edge2->with([
+                'foo' => 'bar',
+                'faz' => 'baz',
+            ]);
+        $this->assertEquals('/foo?limit=3&fields=bar,baz&foo=bar&faz=baz', (string) $edge2);
+    }
+
+    /** @test */
+    public function other_edges_can_be_embedded_in_the_root_edge()
     {
         $edge_to_embed = new Edge('embeds', ['faz', 'boo'], 6);
         $edge = new RootEdge('root', ['bar', 'baz', $edge_to_embed], 3);
@@ -43,7 +63,8 @@ class RootEdgeTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('/root?limit=3&fields=bar,baz,embeds.limit(6).fields(faz,boo)', (string) $edge);
     }
 
-    public function testRecursivelyTraverseNestedEdges()
+    /** @test */
+    public function embedded_edges_can_be_traversed_recursively()
     {
         $edge_r_four = new Edge('r_four', ['bla'], 4);
 
@@ -67,7 +88,8 @@ class RootEdgeTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $children);
     }
 
-    public function testGettingChildEdgesReturnsSelf()
+    /** @test */
+    public function root_edge_name_is_returned_when_there_are_no_children()
     {
         $edge = new RootEdge('foo', ['bar', 'baz'], 1);
 
@@ -76,7 +98,8 @@ class RootEdgeTest extends PHPUnit_Framework_TestCase
         $this->assertEquals([['foo']], $children);
     }
 
-    public function testCanConvertEdgeToEndpointsWithNoChildren()
+    /** @test */
+    public function the_root_edge_can_be_converted_to_an_endpoint()
     {
         $edge = new RootEdge('one', ['bar', 'baz'], 1);
 
@@ -85,7 +108,8 @@ class RootEdgeTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(['/one'], $endpoints);
     }
 
-    public function testCanConvertEdgeToEndpointsWithDepth()
+    /** @test */
+    public function the_root_edge_can_be_converted_to_an_endpoint_with_embedded_endpoints()
     {
         $edge_four = new Edge('four', ['bla'], 4);
         $edge_three = new Edge('three', ['faz', 'boo', $edge_four], 3);
@@ -97,7 +121,8 @@ class RootEdgeTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(['/one/two/three/four'], $endpoints);
     }
 
-    public function testCanConvertEdgeToEndpointsWithMultiEdgesAndDepth()
+    /** @test */
+    public function the_root_edge_can_be_converted_to_an_endpoint_with_multiple_embedded_endpoints()
     {
         $edge_tags = new Edge('tags');
 
