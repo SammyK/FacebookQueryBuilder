@@ -14,7 +14,7 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "facebook/php-sdk-v4": "4.0.*",
+        "facebook/php-sdk-v4": "~4.0",
         "nesbot/Carbon": "*"
     },
     "require-dev": {

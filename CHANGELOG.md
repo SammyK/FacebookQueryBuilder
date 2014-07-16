@@ -1,6 +1,11 @@
 # CHANGELOG
 
 
+## 1.1.0 - July 16, 2014
+
+- Adjusted tagging to work according to [semver](http://semver.org/).
+
+
 ## 1.0.7 - June 10, 2014
 
 - Added `search()` method to easily search Graph.

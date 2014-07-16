@@ -36,7 +36,7 @@ Facebook Query Builder is installed using [Composer](https://getcomposer.org/). 
 ```json
 {
     "require": {
-        "sammyk/facebook-query-builder": "1.0.*"
+        "sammyk/facebook-query-builder": "~1.1"
     }
 }
 ```
@@ -44,7 +44,7 @@ Facebook Query Builder is installed using [Composer](https://getcomposer.org/). 
 Or via the command line in the root of your project installation.
 
 ```bash
-$ composer require "sammyk/facebook-query-builder:1.0.*"
+$ composer require "sammyk/facebook-query-builder:~1.1"
 ```
 
 
