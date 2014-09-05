@@ -573,18 +573,11 @@ $ phpunit
 
 ## TODO
 
-Future developments:
+Future developments *(updated Sept 5, 2014)*
 
-1. Batch requests
-
-```php
-$res = $fqb->batch(function($fqb) {
-    $fqb->object('user_id')->get();
-    $fqb->object('page_id')->fields('name', 'about')->get();
-});
-```
-
-2. Pagination on `GraphCollection` objects
+1. Upgrade to use the Facebook SDK v4.1 (when it comes out). This will give us batch request support & pagination on `GraphList` objects (response collections from the SDK).
+2. Move away from using statics. Usage of statics will be deprecated in 2.0.
+3. Use native collections (`\Facebook\GraphObject`, `\Facebook\GraphList`, etc) and entities (`\Facebook\Entities\AccessToken`, `\Facebook\Entities\SignedRequest`, etc) from the Facebook SDK v4.1 when it comes out.
 
 
 ## Contributing
