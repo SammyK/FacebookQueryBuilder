@@ -2,11 +2,6 @@
 
 use Facebook\FacebookSession;
 
-if ( ! ini_get('date.timezone'))
-{
-    date_default_timezone_set('America/Los_Angeles');
-}
-
 class FQB
 {
     /**

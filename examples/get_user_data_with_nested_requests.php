@@ -7,6 +7,7 @@ use SammyK\FacebookQueryBuilder\FacebookQueryBuilderException;
 /**
  * Get more info on the logged in user with just one call to graph.
  * Requires an access token with the "user_photos", "user_likes", "user_events" extended permissions.
+ * @see https://developers.facebook.com/docs/graph-api/using-graph-api/#fieldexpansion
  */
 
 // Get first 5 photos the user is tagged in
@@ -35,10 +36,10 @@ $events_user_attending = $fqb
 try
 {
     // Get the logged in user's name, last profile update time, and all those edges
-    $user_data = $fqb
+    $request = $fqb
         ->object('me')
-        ->fields('name', 'updated_time', $photos_user_tagged_in, $pages_user_likes, $events_user_attending)
-        ->get();
+        ->fields('name', 'updated_time', $photos_user_tagged_in, $pages_user_likes, $events_user_attending);
+    $user_data = $request->get();
 }
 catch (FacebookQueryBuilderException $e)
 {
@@ -48,6 +49,9 @@ catch (FacebookQueryBuilderException $e)
     var_dump($e->getResponse());
     exit;
 }
+
+echo '<h1>Request URL to Graph</h1>' . "\n\n";
+echo '<pre>' . (string) $request . '</pre>' . "\n\n";
 
 echo '<h1>User Data</h1>' . "\n\n";
 echo '<p>Name: ' . $user_data['name'] .  "\n\n";

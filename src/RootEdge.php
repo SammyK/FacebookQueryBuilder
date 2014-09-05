@@ -14,7 +14,15 @@ class RootEdge extends Edge
      *
      * @var array
      */
-    protected $compiled_vales = [];
+    protected $compiled_values = [];
+
+    /**
+     * Clear the compiled values.
+     */
+    public function clearCompiledValues()
+    {
+        $this->compiled_values = [];
+    }
 
     /**
      * Compile the field values.
@@ -23,7 +31,7 @@ class RootEdge extends Edge
     {
         if (count($this->fields) === 0) return;
 
-        $this->compiled_vales[] = 'fields=' . implode(',', $this->fields);
+        $this->compiled_values[] = 'fields=' . implode(',', $this->fields);
     }
 
     /**
@@ -33,7 +41,7 @@ class RootEdge extends Edge
     {
         if ($this->limit === 0) return;
 
-        $this->compiled_vales[] = 'limit=' . $this->limit;
+        $this->compiled_values[] = 'limit=' . $this->limit;
     }
 
     /**
@@ -43,7 +51,7 @@ class RootEdge extends Edge
     {
         if (count($this->modifiers) === 0) return;
 
-        $this->compiled_vales[] = http_build_query($this->modifiers, '', '&');
+        $this->compiled_values[] = http_build_query($this->modifiers, '', '&');
     }
 
     /**
@@ -53,14 +61,16 @@ class RootEdge extends Edge
      */
     public function compileEdge()
     {
+        $this->clearCompiledValues();
+
         $this->compileLimit();
         $this->compileFields();
         $this->compileModifiers();
 
         $append = '';
-        if (count($this->compiled_vales) > 0)
+        if (count($this->compiled_values) > 0)
         {
-            $append = '?' . implode('&', $this->compiled_vales);
+            $append = '?' . implode('&', $this->compiled_values);
         }
 
         //$append = '?' . http_build_query($values);

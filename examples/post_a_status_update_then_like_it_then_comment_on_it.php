@@ -29,6 +29,10 @@ try
     $response = $fqb->object($status_update_id . '/comments')->with($comment)->post();
     echo '<h1>Post Comment Response</h1>' . "\n\n";
     var_dump($response->toArray());
+
+    echo '<h1>Now check your profile...</h1>' . "\n\n";
+    echo '<p>You should see something like this...</p>' . "\n\n";
+    echo '<p><img src="https://sammyk.s3.amazonaws.com/open-source/facebook-query-builder/status-update-example.png" width="467" height="247" alt=""/></p>';
 }
 catch (FacebookQueryBuilderException $e)
 {

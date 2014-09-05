@@ -132,7 +132,7 @@ class Edge
             $processed_fields[] = $v instanceof Edge ? (string) $v : urlencode($v);
         }
 
-        return '.fields(' . implode(',',$processed_fields) . ')';
+        return '{' . implode(',',$processed_fields) . '}';
     }
 
     /**

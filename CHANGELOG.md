@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## 1.1.1 - September 5, 2014
+
+- Fixed bug that would sometimes reset the `date_default_timezone_set()`.
+- Fixed bug where calling `compileEdge()` more than once on the same instance would cause unexpected results.
+- Broadened the scope of catching exceptions from the Facebook PHP SDK.
+- Updated the field expansion syntax that was [released in Graph version 2.1](https://developers.facebook.com/docs/graph-api/using-graph-api/v2.1#fieldexpansion).
+
+
 ## 1.1.0 - July 16, 2014
 
 - Adjusted tagging to work according to [semver](http://semver.org/).

@@ -92,8 +92,8 @@ class EdgeTest extends PHPUnit_Framework_TestCase
         $edge_one = new Edge('foo', ['bar']);
         $edge_two = new Edge('foo', ['bar', 'baz']);
 
-        $this->assertEquals('foo.fields(bar)', (string) $edge_one);
-        $this->assertEquals('foo.fields(bar,baz)', (string) $edge_two);
+        $this->assertEquals('foo{bar}', (string) $edge_one);
+        $this->assertEquals('foo{bar,baz}', (string) $edge_two);
     }
 
     /** @test */
@@ -101,7 +101,7 @@ class EdgeTest extends PHPUnit_Framework_TestCase
     {
         $edge = new Edge('foo', ['bar', 'baz'], 3);
 
-        $this->assertEquals('foo.limit(3).fields(bar,baz)', (string) $edge);
+        $this->assertEquals('foo.limit(3){bar,baz}', (string) $edge);
     }
 
     /** @test */
@@ -110,7 +110,7 @@ class EdgeTest extends PHPUnit_Framework_TestCase
         $edge = new Edge('foo', ['bar', 'baz'], 3);
         $edge->with(['foo' => 'bar']);
 
-        $this->assertEquals('foo.limit(3).fields(bar,baz).foo(bar)', (string) $edge);
+        $this->assertEquals('foo.limit(3){bar,baz}.foo(bar)', (string) $edge);
     }
 
     /** @test */
@@ -119,7 +119,7 @@ class EdgeTest extends PHPUnit_Framework_TestCase
         $edge_to_embed = new Edge('embeds', ['faz', 'boo'], 6);
         $edge = new Edge('foo', ['bar', 'baz', $edge_to_embed], 3);
 
-        $this->assertEquals('foo.limit(3).fields(bar,baz,embeds.limit(6).fields(faz,boo))', (string) $edge);
+        $this->assertEquals('foo.limit(3){bar,baz,embeds.limit(6){faz,boo}}', (string) $edge);
     }
 
     /** @test */
@@ -131,11 +131,11 @@ class EdgeTest extends PHPUnit_Framework_TestCase
         $edge_level_four = new Edge('level_four', ['four', 'faz', $edge_level_three], 4);
         $edge = new Edge('root', ['foo', 'bar', $edge_level_four], 5);
 
-        $expected_one = 'level_one.limit(1).fields(one,foo)';
-        $expected_two = 'level_two.limit(2).fields(two,bar,' . $expected_one .')';
-        $expected_three = 'level_three.limit(3).fields(three,baz,' . $expected_two .')';
-        $expected_four = 'level_four.limit(4).fields(four,faz,' . $expected_three .')';
-        $expected_edge = 'root.limit(5).fields(foo,bar,' . $expected_four .')';
+        $expected_one = 'level_one.limit(1){one,foo}';
+        $expected_two = 'level_two.limit(2){two,bar,' . $expected_one .'}';
+        $expected_three = 'level_three.limit(3){three,baz,' . $expected_two .'}';
+        $expected_four = 'level_four.limit(4){four,faz,' . $expected_three .'}';
+        $expected_edge = 'root.limit(5){foo,bar,' . $expected_four .'}';
 
         $this->assertEquals($expected_edge, (string) $edge);
     }
@@ -160,15 +160,15 @@ class EdgeTest extends PHPUnit_Framework_TestCase
         $expected_tags = 'tags.limit(2)';
 
         $expected_d = 'd';
-        $expected_c = 'c.fields(' . $expected_d . ')';
-        $expected_b = 'b.fields(' . $expected_c . ',' . $expected_tags . ')';
-        $expected_a = 'a.fields(' . $expected_b . ')';
+        $expected_c = 'c{' . $expected_d . '}';
+        $expected_b = 'b{' . $expected_c . ',' . $expected_tags . '}';
+        $expected_a = 'a{' . $expected_b . '}';
 
-        $expected_four = 'four.limit(4).fields(one,foo)';
-        $expected_three = 'three.limit(3).fields(' . $expected_four .',bar,' . $expected_a .')';
-        $expected_two = 'two.limit(2).fields(' . $expected_three .')';
-        $expected_one = 'one.fields(faz,' . $expected_two .')';
-        $expected_edge = 'root.fields(foo,bar,' . $expected_one .')';
+        $expected_four = 'four.limit(4){one,foo}';
+        $expected_three = 'three.limit(3){' . $expected_four .',bar,' . $expected_a .'}';
+        $expected_two = 'two.limit(2){' . $expected_three .'}';
+        $expected_one = 'one{faz,' . $expected_two .'}';
+        $expected_edge = 'root{foo,bar,' . $expected_one .'}';
 
         $this->assertEquals($expected_edge, (string) $edge);
     }

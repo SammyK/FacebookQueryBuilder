@@ -1,7 +1,7 @@
 <?php namespace SammyK\FacebookQueryBuilder;
 
 use Facebook\FacebookSession;
-use Facebook\FacebookRequestException;
+use Facebook\FacebookSDKException;
 use SammyK\FacebookQueryBuilder\RootEdge;
 use SammyK\FacebookQueryBuilder\Response;
 
@@ -185,7 +185,7 @@ class Connection
      *
      * @return \Facebook\FacebookResponse
      *
-     * @throws \SammyK\FacebookQueryBuilder\FacebookQueryBuilderException
+     * @throws FacebookQueryBuilderException
      */
     public function send($path, $method = 'GET', array $params = [], $app_request = false)
     {
@@ -198,7 +198,7 @@ class Connection
 
             return $this->response->create($response);
         }
-        catch (FacebookRequestException $e)
+        catch (FacebookSDKException $e)
         {
             throw new FacebookQueryBuilderException($e);
         }

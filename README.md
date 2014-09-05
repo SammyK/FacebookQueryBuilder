@@ -5,7 +5,7 @@
 [![License](http://img.shields.io/badge/license-MIT-lightgrey.svg)](https://github.com/SammyK/FacebookQueryBuilder/blob/master/LICENSE)
 
 
-An elegant and efficient way to interface with Facebook's [Graph API](https://developers.facebook.com/docs/graph-api) using the latest [Facebook PHP SDK v4](https://github.com/facebook/facebook-php-sdk-v4). It's as easy as:
+An elegant and efficient way to interface with Facebook's [Graph API](https://developers.facebook.com/docs/graph-api) using the latest [Facebook PHP SDK v4.0](https://github.com/facebook/facebook-php-sdk-v4). It's as easy as:
 
 ```php
 $user = $fqb->object('me')->get();

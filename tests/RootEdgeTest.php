@@ -60,7 +60,7 @@ class RootEdgeTest extends PHPUnit_Framework_TestCase
         $edge_to_embed = new Edge('embeds', ['faz', 'boo'], 6);
         $edge = new RootEdge('root', ['bar', 'baz', $edge_to_embed], 3);
 
-        $this->assertEquals('/root?limit=3&fields=bar,baz,embeds.limit(6).fields(faz,boo)', (string) $edge);
+        $this->assertEquals('/root?limit=3&fields=bar,baz,embeds.limit(6){faz,boo}', (string) $edge);
     }
 
     /** @test */
