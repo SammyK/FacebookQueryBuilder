@@ -14,8 +14,7 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "facebook/php-sdk-v4": "~4.0",
-        "nesbot/Carbon": "*"
+        "facebook/php-sdk-v4": "~4.1@dev"
     },
     "require-dev": {
         "mockery/mockery": "dev-master@dev"
@@ -23,6 +22,11 @@
     "autoload": {
         "psr-4": {
             "SammyK\\FacebookQueryBuilder\\": "src"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.0.x-dev"
         }
     }
 }

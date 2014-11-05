@@ -1,6 +1,12 @@
 # CHANGELOG
 
 
+## 2.0.0 - TBD
+
+- Upgraded Facebook PHP SDK dependency to latest v4.1.
+- FQB is now a decorator for the `Facebook\Facebook` super service.
+
+
 ## 1.1.2 - November 5, 2014
 
 - Moved latest stable to 1.1 branch.
