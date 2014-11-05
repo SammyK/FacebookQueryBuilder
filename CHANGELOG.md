@@ -1,6 +1,11 @@
 # CHANGELOG
 
 
+## 1.1.2 - November 5, 2014
+
+- Moved latest stable to 1.1 branch.
+
+
 ## 1.1.1 - September 5, 2014
 
 - Fixed bug that would sometimes reset the `date_default_timezone_set()`.
