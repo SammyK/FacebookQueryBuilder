@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/bootstrap.php';
 
-use SammyK\FacebookQueryBuilder\FacebookQueryBuilderException;
+use Facebook\Exceptions\FacebookResponseException;
 
 /**
  * Gets a list of status updates for the logged in user.
@@ -11,12 +11,15 @@ use SammyK\FacebookQueryBuilder\FacebookQueryBuilderException;
 
 try
 {
-    $statuses = $fqb->object('me/statuses')->limit(10)->get();
+    $response = $fqb
+        ->node('me/statuses')
+        ->limit(10)
+        ->get();
+    $statuses = $response->getGraphList();
 }
-catch (FacebookQueryBuilderException $e)
+catch (FacebookResponseException $e)
 {
-    echo '<p>Error: ' . $e->getMessage() . "\n\n";
-    echo '<p>Facebook SDK Said: ' . $e->getPrevious()->getMessage() . "\n\n";
+    echo '<p>Error! Facebook SDK Said: ' . $e->getMessage() . "\n\n";
     echo '<p>Graph Said: ' .  "\n\n";
     var_dump($e->getResponse());
     exit;

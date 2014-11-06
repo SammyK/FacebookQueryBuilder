@@ -1,29 +1,29 @@
 <?php namespace SammyK\FacebookQueryBuilder;
 
-use Facebook\FacebookSession;
+use Facebook\Facebook;
 
-class FQB
+class FQB extends Facebook
 {
     /**
-     * The root edge we are working with.
+     * The GraphNode we are working with.
      *
-     * @var \SammyK\FacebookQueryBuilder\RootEdge
+     * @var \SammyK\FacebookQueryBuilder\GraphNode
      */
-    public $root_edge;
+    protected $graph_node;
 
     /**
-     * The authentication helper object.
+     * The access token associated with this request.
      *
-     * @var \SammyK\FacebookQueryBuilder\Auth
+     * @var \Facebook\Entities\AccessToken|string|null
      */
-    protected static $auth;
+    protected $fqb_access_token;
 
     /**
-     * The connection to the Facebook Graph API.
+     * The etag associated with this node.
      *
-     * @var \SammyK\FacebookQueryBuilder\Connection
+     * @var string|null
      */
-    protected static $connection;
+    protected $fqb_etag;
 
     /**
      * Data that will be sent in the body of a POST or DELETE request
@@ -31,123 +31,101 @@ class FQB
      *
      * @var array
      */
-    public $modifiers = [];
+    protected $modifiers = [];
 
     /**
-     * New up a new RootEdge instance.
+     * Remembers the last config sent to the constructor.
      *
-     * @param string $edge_name
-     * @param array $fields The fields we want on the root edge
+     * @var array
      */
-    public function __construct($edge_name = null, array $fields = [])
+    protected $fqb_config = [];
+
+    /**
+     * New up a new GraphNode instance.
+     *
+     * @param array $config The configuration
+     */
+    public function __construct(array $config = [])
     {
-        if (isset($edge_name))
+        if (isset($config['fqb:graph_node_name']))
         {
-            $this->root_edge = new RootEdge($edge_name, $fields);
+            $this->graph_node = new GraphNode($config['fqb:graph_node_name']);
+            unset($config['fqb:graph_node_name']);
         }
+
+        $this->fqb_config = $config;
+
+        parent::__construct($config);
     }
 
     /**
-     * Return the RootEdge as a string.
+     * Send GET request to Graph.
+     * The arguments are there to keep notices from showing up in strict mode.
      *
-     * @return string
+     * @param string $endpoint
+     * @param \Facebook\Entities\AccessToken|string|null $accessToken
+     * @param string|null $eTag
+     * @param string|null $graphVersion
+     *
+     * @return \Facebook\Entities\FacebookResponse
+     *
+     * @throws \Facebook\Exceptions\FacebookSDKException
      */
-    public function getQueryUrl()
+    public function get($endpoint = null, $accessToken = null, $eTag = null, $graphVersion = null)
     {
-        return (string) $this->root_edge;
-    }
-
-    /**
-     * Sets the app credentials.
-     *
-     * @param int $app_id
-     * @param string $app_secret
-     */
-    public static function setAppCredentials($app_id, $app_secret)
-    {
-        static::getConnection()->setAppCredentials($app_id, $app_secret);
-    }
-
-    /**
-     * Sets the access token to be used for all API requests.
-     *
-     * @param AccessToken|string $access_token
-     */
-    public static function setAccessToken($access_token)
-    {
-        static::getConnection()->setAccessToken($access_token);
-    }
-
-    /**
-     * Sets the FacebookSession to be used for all API requests.
-     *
-     * @param \Facebook\FacebookSession $facebook_session
-     */
-    public static function setFacebookSession(FacebookSession $facebook_session)
-    {
-        static::getConnection()->setFacebookSession($facebook_session);
-    }
-
-    /**
-     * The name of a custom class that extends the \Facebook\FacebookRedirectLoginHelper
-     *
-     * @param string $redirect_helper_alias
-     */
-    public static function setRedirectHelperAlias($redirect_helper_alias)
-    {
-        Auth::setRedirectHelperAlias($redirect_helper_alias);
-    }
-
-    /**
-     * Send GET request to Facebook Graph API.
-     *
-     * @param array $fields The fields we want on the root edge
-     *
-     * @return \SammyK\FacebookQueryBuilder\Collection
-     */
-    public function get(array $fields = [])
-    {
-        $this->prepareRootEdgeForGetRequest($fields);
-
-        return static::getConnection()->get($this->root_edge)->getResponse();
+        $this->prepareGraphNodeForGetRequest();
+        $url = $this->asUrl();
+        return parent::get($url, $this->fqb_access_token, $this->fqb_etag);
     }
 
     /**
      * Prepare the root edge for a GET request.
-     *
-     * @param array $fields The fields we want on the root edge
      */
-    public function prepareRootEdgeForGetRequest(array $fields = [])
+    public function prepareGraphNodeForGetRequest()
     {
-        if (count($fields) > 0)
-        {
-            $this->root_edge->fields($fields);
-        }
-
         if (count($this->modifiers) > 0)
         {
-            $this->root_edge->with($this->modifiers);
+            $this->graph_node->with($this->modifiers);
         }
     }
 
     /**
-     * Send POST request to Facebook Graph API.
+     * Send POST request to Graph.
+     * The arguments are there to keep notices from showing up in strict mode.
      *
-     * @return \SammyK\FacebookQueryBuilder\Collection
+     * @param string $endpoint
+     * @param array $params
+     * @param \Facebook\Entities\AccessToken|string|null $accessToken
+     * @param string|null $eTag
+     * @param string|null $graphVersion
+     *
+     * @return \Facebook\Entities\FacebookResponse
+     *
+     * @throws \Facebook\Exceptions\FacebookSDKException
      */
-    public function post()
+    public function post($endpoint = null, array $params = [], $accessToken = null, $eTag = null, $graphVersion = null)
     {
-        return static::getConnection()->post($this->root_edge, $this->modifiers)->getResponse();
+        $url = $this->asUrl();
+        return parent::post($url, $this->modifiers, $this->fqb_access_token, $this->fqb_etag);
     }
 
     /**
-     * Send DELETE request to Facebook Graph API.
+     * Send DELETE request to Graph.
+     * The arguments are there to keep notices from showing up in strict mode.
      *
-     * @return \SammyK\FacebookQueryBuilder\Collection
+     * @param string $endpoint
+     * @param \Facebook\Entities\AccessToken|string|null $accessToken
+     * @param string|null $eTag
+     * @param string|null $graphVersion
+     *
+     * @return \Facebook\Entities\FacebookResponse
+     *
+     * @throws \Facebook\Exceptions\FacebookSDKException
      */
-    public function delete()
+    public function delete($endpoint = null, $accessToken = null, $eTag = null, $graphVersion = null)
     {
-        return static::getConnection()->delete($this->root_edge, $this->modifiers)->getResponse();
+        $url = $this->asUrl();
+        return parent::delete($url, $this->fqb_access_token, $this->fqb_etag);
     }
 
     /**
@@ -160,7 +138,7 @@ class FQB
      */
     public function search($search, $type = null)
     {
-        $fqb = $this->object('search')->with(['q' => $search]);
+        $fqb = $this->node('search')->with(['q' => $search]);
 
         if ($type)
         {
@@ -171,7 +149,7 @@ class FQB
     }
 
     /**
-     * Alias to RootEdge
+     * Alias to method on GraphNode.
      *
      * @param int $limit
      *
@@ -179,13 +157,13 @@ class FQB
      */
     public function limit($limit)
     {
-        $this->root_edge->limit($limit);
+        $this->graph_node->limit($limit);
 
         return $this;
     }
 
     /**
-     * Alias to RootEdge
+     * Alias to method on GraphNode.
      *
      * @param array|string $fields The fields we want on the root edge
      *
@@ -198,9 +176,49 @@ class FQB
             $fields = func_get_args();
         }
 
-        $this->root_edge->fields($fields);
+        $this->graph_node->fields($fields);
 
         return $this;
+    }
+
+    /**
+     * Sets the etag.
+     *
+     * @param string $etag The eTag.
+     *
+     * @return \SammyK\FacebookQueryBuilder\FQB
+     */
+    public function etag($etag)
+    {
+        $this->fqb_etag = $etag;
+
+        return $this;
+    }
+
+    /**
+     * Sets the access token.
+     *
+     * @param \Facebook\Entities\AccessToken|string $access_token The access token to overwrite the default.
+     *
+     * @return \SammyK\FacebookQueryBuilder\FQB
+     */
+    public function accessToken($access_token)
+    {
+        $this->fqb_access_token = $access_token;
+
+        return $this;
+    }
+
+    /**
+     * Alias of modifiers().
+     *
+     * @param array $data
+     *
+     * @return \SammyK\FacebookQueryBuilder\FQB
+     */
+    public function with(array $data)
+    {
+        return $this->modifiers($data);
     }
 
     /**
@@ -211,45 +229,11 @@ class FQB
      *
      * @return \SammyK\FacebookQueryBuilder\FQB
      */
-    public function with(array $data)
+    public function modifiers(array $data)
     {
         $this->modifiers = array_merge($this->modifiers, $data);
 
         return $this;
-    }
-
-    /**
-     * Get the authentication helper object.
-     *
-     * @return \SammyK\FacebookQueryBuilder\Auth
-     */
-    public function auth()
-    {
-        if (isset(static::$auth)) return static::$auth;
-
-        return static::$auth = new Auth();
-    }
-
-    /**
-     * Get the connection to Facebook.
-     *
-     * @return \SammyK\FacebookQueryBuilder\Connection
-     */
-    public static function getConnection()
-    {
-        if (isset(static::$connection)) return static::$connection;
-
-        return static::$connection = new Connection(new FacebookRequestMaker(), new Response());
-    }
-
-    /**
-     * Set the connection to Facebook.
-     *
-     * @param \SammyK\FacebookQueryBuilder\Connection $connection
-     */
-    public static function setConnection(Connection $connection)
-    {
-        static::$connection = $connection;
     }
 
     /**
@@ -258,33 +242,43 @@ class FQB
      * @param array $fields The fields we want on the edge
      * @param string $edge_name
      *
-     * @return \SammyK\FacebookQueryBuilder\Edge
+     * @return \SammyK\FacebookQueryBuilder\GraphEdge
      */
     public function edge($edge_name, array $fields = [])
     {
-        return new Edge($edge_name, $fields);
+        return new GraphEdge($edge_name, $fields);
     }
 
     /**
-     * New up an instance.
+     * New up an instance of self.
      *
-     * @param string $edge_name The edge name
-     * @param array $fields The fields we want on the root edge
+     * @param string $graph_node_name The node name
      *
      * @return \SammyK\FacebookQueryBuilder\FQB
      */
-    public function object($edge_name, array $fields = [])
+    public function node($graph_node_name)
     {
-        return new static($edge_name, $fields);
+        $this->fqb_config['fqb:graph_node_name'] = $graph_node_name;
+        return new static($this->fqb_config);
     }
 
     /**
-     * Returns root edge as nicely formatted string.
+     * Return the GraphNode as a URL string.
+     *
+     * @return string
+     */
+    public function asUrl()
+    {
+        return $this->graph_node->asUrl();
+    }
+
+    /**
+     * Returns the Graph URL as nicely formatted string.
      *
      * @return string
      */
     public function __toString()
     {
-        return $this->root_edge->compileEdge();
+        return $this->asUrl();
     }
 }

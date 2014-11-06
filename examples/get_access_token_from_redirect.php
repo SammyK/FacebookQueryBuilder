@@ -4,17 +4,21 @@ session_start();
 
 require_once __DIR__ . '/bootstrap.php';
 
-use SammyK\FacebookQueryBuilder\FQB;
-use SammyK\FacebookQueryBuilder\FacebookQueryBuilderException;
+use Facebook\Helpers\FacebookRedirectLoginHelper;
+use Facebook\Exceptions\FacebookResponseException;
+use Facebook\Exceptions\FacebookSDKException;
+
+$facebookApp = $fqb->getApp();
+$facebookClient = $fqb->getClient();
+$redirectHelper = new FacebookRedirectLoginHelper($facebookApp);
 
 try
 {
-    $token = $fqb->auth()->getTokenFromRedirect($config['callback_url']);
+    $token = $redirectHelper->getAccessToken($facebookClient, $config['callback_url']);
 }
-catch (FacebookQueryBuilderException $e)
+catch (FacebookSDKException $e)
 {
-    echo '<p>Error: ' . $e->getMessage() . "\n\n";
-    echo '<p>Facebook SDK Said: ' . $e->getPrevious()->getMessage() . "\n\n";
+    echo '<p>Error! Facebook SDK Said: ' . $e->getMessage() . "\n\n";
     exit;
 }
 
@@ -24,7 +28,8 @@ if ( ! $token)
      * No token returned. Show login link.
      */
     $scope = ['email', 'read_stream']; // Optional
-    $login_url = $fqb->auth()->getLoginUrl($config['callback_url'], $scope);
+    $login_url = $redirectHelper->getLoginUrl($config['callback_url'], $scope);
+
     echo '<a href="' . $login_url . '">Log in with Facebook</a>';
     exit;
 }
@@ -37,18 +42,17 @@ var_dump($token);
  */
 try
 {
-    $token_info = $token->getInfo();
+    $token_info = $token->getInfo($facebookApp, $facebookClient);
 }
-catch (FacebookQueryBuilderException $e)
+catch (FacebookResponseException $e)
 {
-    echo '<p>Error: ' . $e->getMessage() . "\n\n";
-    echo '<p>Facebook SDK Said: ' . $e->getPrevious()->getMessage() . "\n\n";
+    echo '<p>Error! Facebook SDK Said: ' . $e->getMessage() . "\n\n";
     echo '<p>Graph Said: ' .  "\n\n";
     var_dump($e->getResponse());
     exit;
 }
 
-var_dump($token_info->toArray());
+var_dump($token_info->asArray());
 
 if ( ! $token->isLongLived())
 {
@@ -57,12 +61,11 @@ if ( ! $token->isLongLived())
      */
     try
     {
-        $token = $token->extend();
+        $token = $token->extend($facebookApp, $facebookClient);
     }
-    catch (FacebookQueryBuilderException $e)
+    catch (FacebookResponseException $e)
     {
-        echo '<p>Error: ' . $e->getMessage() . "\n\n";
-        echo '<p>Facebook SDK Said: ' . $e->getPrevious()->getMessage() . "\n\n";
+        echo '<p>Error! Facebook SDK Said: ' . $e->getMessage() . "\n\n";
         echo '<p>Graph Said: ' .  "\n\n";
         var_dump($e->getResponse());
         exit;
@@ -76,37 +79,37 @@ if ( ! $token->isLongLived())
      */
     try
     {
-        $token_info = $token->getInfo();
+        $token_info = $token->getInfo($facebookApp, $facebookClient);
     }
-    catch (FacebookQueryBuilderException $e)
+    catch (FacebookResponseException $e)
     {
-        echo '<p>Error: ' . $e->getMessage() . "\n\n";
-        echo '<p>Facebook SDK Said: ' . $e->getPrevious()->getMessage() . "\n\n";
+        echo '<p>Error! Facebook SDK Said: ' . $e->getMessage() . "\n\n";
         echo '<p>Graph Said: ' .  "\n\n";
         var_dump($e->getResponse());
         exit;
     }
 
-    var_dump($token_info->toArray());
+    var_dump($token_info->asArray());
 }
-
-FQB::setAccessToken($token);
 
 /**
  * Get the logged in user's profile.
  */
 try
 {
-    $user = $fqb->object('me')->get();
+    $user = $fqb
+        ->node('me')
+        ->accessToken($token)
+        ->get()
+        ->getGraphUser();
 }
-catch (FacebookQueryBuilderException $e)
+catch (FacebookResponseException $e)
 {
-    echo '<p>Error: ' . $e->getMessage() . "\n\n";
-    echo '<p>Facebook SDK Said: ' . $e->getPrevious()->getMessage() . "\n\n";
+    echo '<p>Error! Facebook SDK Said: ' . $e->getMessage() . "\n\n";
     echo '<p>Graph Said: ' .  "\n\n";
     var_dump($e->getResponse());
     exit;
 }
 
 echo '<h1>User Data</h1>' . "\n\n";
-var_dump($user->toArray());
+var_dump($user->asArray());

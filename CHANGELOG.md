@@ -5,6 +5,33 @@
 
 - Upgraded Facebook PHP SDK dependency to latest v4.1.
 - FQB is now a decorator for the `Facebook\Facebook` super service.
+- Renamed `Edge` to `GraphEdge`.
+- Renamed `RootEdge` to `GraphNode`.
+- Removed all the classes that were ported over to the official Facebook PHP SDK v4.1:
+    - `AccessToken`
+    - `BaseGraphObject` & `GraphObjectInitializer` (ported over as `GraphObjectFactory`)
+    - `Collection`
+    - `GraphCollection` (ported over as `GraphList`)
+    - `GraphObject` (ported into existing `GraphObject`)
+    - `Response` (ported into existing `FacebookResponse`)
+- Removed the supporting classes that are no longer needed after upgrading the SDK to v4.1:
+    - `ArrayHelpers`
+    - `Auth`
+    - `Connection`
+    - `FacebookRequestMaker`
+    - `GraphError`
+    - `FacebookQueryBuilderException`
+- Removed `FQB::setAppCredentials()` in favor of setting the `app_id` and `app_secret` via the constructor.
+- Removed `FQB::setAccessToken()` in favor of setting the `default_access_token` via the constructor.
+- Removed `FQB::setFacebookSession()` since `FacebookSession` does not exist in v4.1 of the SDK.
+- Removed `FQB::auth()` since obtaining an access token is now done with v4.1 of the SDK directly.
+- Removed `FQB::getConnection()` & `FQB::setConnection()` since making requests to Graph in v4.1 of the SDK doesn't suck.
+- @TODO in 4.1: Removed `FQB::setRedirectHelperAlias()` in favor of setting the `persistent_state_handler` via constructor.
+- Added `FQB::modifiers()` as an alias to `FQB::with()` so that the nomenclature makes more sense on GET requests.
+- Added `FQB::etag()` to support eTags.
+- Added `FQB::accessToken()` to overwrite the `default_access_token`.
+- Renamed `GraphEdge::compileEdge()` and `GraphNode::compileEdge()` to `asUrl()`.
+- Renamed `FQB::getQueryUrl()` to `asUrl()`.
 
 
 ## 1.1.2 - November 5, 2014

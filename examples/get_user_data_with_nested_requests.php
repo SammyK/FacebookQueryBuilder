@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/bootstrap.php';
 
-use SammyK\FacebookQueryBuilder\FacebookQueryBuilderException;
+use Facebook\Exceptions\FacebookResponseException;
 
 /**
  * Get more info on the logged in user with just one call to graph.
@@ -37,14 +37,14 @@ try
 {
     // Get the logged in user's name, last profile update time, and all those edges
     $request = $fqb
-        ->object('me')
+        ->node('me')
         ->fields('name', 'updated_time', $photos_user_tagged_in, $pages_user_likes, $events_user_attending);
-    $user_data = $request->get();
+    $response = $request->get();
+    $user_data = $response->getGraphObject();
 }
-catch (FacebookQueryBuilderException $e)
+catch (FacebookResponseException $e)
 {
-    echo '<p>Error: ' . $e->getMessage() . "\n\n";
-    echo '<p>Facebook SDK Said: ' . $e->getPrevious()->getMessage() . "\n\n";
+    echo '<p>Error! Facebook SDK Said: ' . $e->getMessage() . "\n\n";
     echo '<p>Graph Said: ' .  "\n\n";
     var_dump($e->getResponse());
     exit;
@@ -55,14 +55,14 @@ echo '<pre>' . (string) $request . '</pre>' . "\n\n";
 
 echo '<h1>User Data</h1>' . "\n\n";
 echo '<p>Name: ' . $user_data['name'] .  "\n\n";
-echo '<p>Last Update: ' . $user_data['updated_time']->diffForHumans() .  "\n\n";
+echo '<p>Last Update: ' . $user_data['updated_time']->format('r') .  "\n\n";
 
 echo '<h1>Last 5 Photos</h1>' . "\n\n";
 if (isset($user_data['photos']))
 {
     foreach ($user_data['photos'] as $photo)
     {
-        var_dump($photo->toArray());
+        var_dump($photo->asArray());
     }
 }
 else
@@ -75,7 +75,7 @@ if (isset($user_data['likes']))
 {
     foreach ($user_data['likes'] as $page)
     {
-        var_dump($page->toArray());
+        var_dump($page->asArray());
     }
 }
 else
@@ -88,7 +88,7 @@ if (isset($user_data['events']))
 {
     foreach ($user_data['events'] as $event)
     {
-        var_dump($event->toArray());
+        var_dump($event->asArray());
     }
 }
 else

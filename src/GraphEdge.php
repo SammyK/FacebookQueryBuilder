@@ -1,41 +1,34 @@
 <?php namespace SammyK\FacebookQueryBuilder;
 
-class Edge
+class GraphEdge
 {
     /**
      * The name of the edge.
      *
      * @var string
      */
-    public $name;
+    protected $name;
 
     /**
      * The fields & edges that we want to pull from the edge.
      *
      * @var array
      */
-    public $fields = [];
+    protected $fields = [];
 
     /**
      * The modifiers that will be appended to the edge.
      *
      * @var array
      */
-    public $modifiers = [];
+    protected $modifiers = [];
 
     /**
      * The maximum number of records to return for this edge.
      *
      * @var int
      */
-    public $limit;
-
-    /**
-     * Sets this as the root edge
-     *
-     * @var boolean
-     */
-    protected $is_root = false;
+    protected $limit;
 
     /**
      * Create a new edge value object.
@@ -65,6 +58,16 @@ class Edge
     }
 
     /**
+     * Gets the limit for this edge.
+     *
+     * @return int
+     */
+    public function getLimit()
+    {
+        return $this->limit;
+    }
+
+    /**
      * Set the fields for this edge.
      *
      * @param mixed $fields
@@ -83,16 +86,37 @@ class Edge
     }
 
     /**
+     * Gets the fields for this edge.
+     *
+     * @return array
+     */
+    public function getFields()
+    {
+        return $this->fields;
+    }
+
+    /**
      * Modifier data to be sent with this edge.
      *
      * @param array $data
-     * @return \SammyK\FacebookQueryBuilder\Edge
+     *
+     * @return \SammyK\FacebookQueryBuilder\GraphEdge
      */
     public function with(array $data)
     {
         $this->modifiers = array_merge($this->modifiers, $data);
 
         return $this;
+    }
+
+    /**
+     * Gets the modifiers for this edge.
+     *
+     * @return array
+     */
+    public function getModifiers()
+    {
+        return $this->modifiers;
     }
 
     /**
@@ -129,7 +153,7 @@ class Edge
 
         foreach ($this->fields as $v)
         {
-            $processed_fields[] = $v instanceof Edge ? (string) $v : urlencode($v);
+            $processed_fields[] = $v instanceof GraphEdge ? (string) $v : urlencode($v);
         }
 
         return '{' . implode(',',$processed_fields) . '}';
@@ -143,16 +167,6 @@ class Edge
     public function compileLimit()
     {
         return $this->limit > 0 ? '.limit(' . $this->limit . ')' : '';
-    }
-
-    /**
-     * Compile the final edge.
-     *
-     * @return string
-     */
-    public function compileEdge()
-    {
-        return $this->name . $this->compileLimit() . $this->compileFields() . $this->compileModifiers();
     }
 
     /**
@@ -185,7 +199,7 @@ class Edge
 
         foreach ($this->fields as $v)
         {
-            if ($v instanceof Edge)
+            if ($v instanceof GraphEdge)
             {
                 $has_children = true;
 
@@ -207,12 +221,22 @@ class Edge
     }
 
     /**
-     * Returns edge as nicely formatted string.
+     * Compile the final URL as a string.
+     *
+     * @return string
+     */
+    public function asUrl()
+    {
+        return $this->name . $this->compileLimit() . $this->compileFields() . $this->compileModifiers();
+    }
+
+    /**
+     * Compile the final URL as a string.
      *
      * @return string
      */
     public function __toString()
     {
-        return $this->compileEdge();
+        return $this->asUrl();
     }
 }

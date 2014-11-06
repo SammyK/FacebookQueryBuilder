@@ -2,23 +2,23 @@
 
 require_once __DIR__ . '/bootstrap.php';
 
-use SammyK\FacebookQueryBuilder\FacebookQueryBuilderException;
+use Facebook\Exceptions\FacebookResponseException;
 
 /**
  * Get the logged in user's profile.
  */
 try
 {
-    $user = $fqb->object('me')->get();
+    $response = $fqb->node('me')->get();
+    $user = $response->getGraphUser();
 }
-catch (FacebookQueryBuilderException $e)
+catch (FacebookResponseException $e)
 {
-    echo '<p>Error: ' . $e->getMessage() . "\n\n";
-    echo '<p>Facebook SDK Said: ' . $e->getPrevious()->getMessage() . "\n\n";
+    echo '<p>Error! Facebook SDK Said: ' . $e->getMessage() . "\n\n";
     echo '<p>Graph Said: ' .  "\n\n";
     var_dump($e->getResponse());
     exit;
 }
 
 echo '<h1>Logged In User\'s Profile</h1>' . "\n\n";
-var_dump($user->toArray());
+var_dump($user->asArray());

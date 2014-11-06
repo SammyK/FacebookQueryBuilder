@@ -12,9 +12,9 @@ if ( ! file_exists(__DIR__ . '/config.php'))
 // Pull in config
 $config = require __DIR__ . '/config.php';
 
-// Set the config
-FQB::setAppCredentials($config['app_id'], $config['app_secret']);
-FQB::setAccessToken($config['access_token']);
-
 // Load up!
-$fqb = new FQB();
+$fqb = new FQB([
+    'app_id' => $config['app_id'],
+    'app_secret' => $config['app_secret'],
+    'default_access_token' => $config['access_token'],
+]);

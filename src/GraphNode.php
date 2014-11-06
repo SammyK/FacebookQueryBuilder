@@ -1,14 +1,7 @@
 <?php namespace SammyK\FacebookQueryBuilder;
 
-class RootEdge extends Edge
+class GraphNode extends GraphEdge
 {
-    /**
-     * Sets this as the root edge.
-     *
-     * @var boolean
-     */
-    protected $is_root = true;
-
     /**
      * Compiled values that are ready to be concatenated.
      *
@@ -55,11 +48,11 @@ class RootEdge extends Edge
     }
 
     /**
-     * Compile the final edge.
+     * Compile the final URL as a string.
      *
      * @return string
      */
-    public function compileEdge()
+    public function asUrl()
     {
         $this->clearCompiledValues();
 

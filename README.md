@@ -1,6 +1,6 @@
 # Facebook Query Builder
 
-[![Build Status](http://img.shields.io/travis/SammyK/FacebookQueryBuilder.svg)](https://travis-ci.org/SammyK/FacebookQueryBuilder)
+[![Build Status](http://img.shields.io/travis/SammyK/FacebookQueryBuilder/master.svg)](https://travis-ci.org/SammyK/FacebookQueryBuilder)
 [![Latest Stable Version](http://img.shields.io/badge/Development%20Version-2.0.0-orange.svg)](https://packagist.org/packages/sammyk/facebook-query-builder)
 [![License](http://img.shields.io/badge/license-MIT-lightgrey.svg)](https://github.com/SammyK/FacebookQueryBuilder/blob/master/LICENSE)
 
@@ -11,11 +11,12 @@ An elegant and efficient way to interface with Facebook's [Graph API](https://de
 $response = $fqb->node('me')->get();
 ```
 
+- [Introduction](#introduction)
 - [Installation](#installation)
 - [Usage](#usage)
     - [Obtaining An Access Token](#obtaining-an-access-token)
     - [The AccessToken Object](#the-accesstoken-object)
-    - [Setting The Access Token Or FacebookSession](#setting-the-access-token-or-facebooksession)
+    - [Setting The Access Token](#setting-the-access-token)
     - [Examples](#examples)
     - [Method Reference](#method-reference)
     - [Request Objects](#request-objects)
@@ -26,6 +27,34 @@ $response = $fqb->node('me')->get();
 - [CHANGELOG](#changelog)
 - [Credits](#credits)
 - [License](#license)
+
+
+## Introduction
+
+The Facebook Query Builder uses the same [Graph API nomenclature](https://developers.facebook.com/docs/graph-api/quickstart#basics) for three main concepts:
+
+1. **Node:** A node represents a "real-world thing" on Facebook like a user or a page. In the Facebook PHP SDK, nodes that are returned from a Graph response are represented as `GraphObjects`'s.
+2. **Edge:** An edge is the relationship between two or more nodes. For example a "photo" node would have a "comments" edge. In the Facebook PHP SDK, edges retruned from a Graph response are represented as a list of `GraphObjects`'s called a `GraphList`.
+3. **Field:** Nodes have properties associated with them. These properties are called fields. A user has an "id" and "name" field for example.
+
+When you send a request to the Graph API, the URL is structured like so:
+
+    /node-id/edge-name?fields=field-name
+
+To generate the same URL with Facebook Query Builder, you'd do the following:
+
+```php
+$edge = $fqb->edge('edge-name')->fields('field-name');
+echo $fqb->node('node-id')->fields($edge);
+```
+
+If you were to execute that script, you might be surprised to see the URL looks a little different because it would output:
+
+    /node-id?fields=edge-name{field-name}
+
+The two URL's are functionally identical. If we sent those URL's to the Graph API, the response would *almost* be the same (with a few minor differences). What makes the URL generated with Facebook Query Builder different is that it is being expressed as a [nested request](https://developers.facebook.com/docs/graph-api/using-graph-api#fieldexpansion).
+
+And that is what makes Facebook Query Builder so powerful. It does the heavy lifting to generate properly formatted nested requests from a fluent, easy-to-read PHP interface.
 
 
 ## Installation
@@ -69,6 +98,7 @@ $fqb = new FQB([
     // . . .
     'enable_beta_mode' => true,
     'http_client_handler' => 'guzzle',
+    // . . .
     ]);
 ```
 
@@ -77,7 +107,7 @@ $fqb = new FQB([
 
 Most calls to Graph require an access token. There are three ways to obtain an access token.
 
-As of version 2.0 of the Facebook Query Builder, the `AccessToken` object was ported to the official Facebook PHP SDK v4.1. So you can just obtain an access token from the SDK methods.
+> **Note:** As of version 2.0 of the Facebook Query Builder, the `AccessToken` object was ported to the official Facebook PHP SDK v4.1. So you can just obtain an access token from the SDK methods.
 
 
 ### From A Redirect
@@ -124,7 +154,7 @@ $redirectHelper = new FacebookRedirectLoginHelper($facebookApp);
 
 try {
   $accessToken = $redirectHelper->getAccessToken($facebookClient, 'http://my-callback/url');
-} catch (FacebookQueryBuilderException $e) {
+} catch (FacebookSDKException $e) {
   // Failed to obtain access token
   echo 'Error:' . $e->getMessage();
 }
@@ -218,15 +248,13 @@ $page = $fqb->node('facebook_page_id')->fields('id','name','about')->get();
 
 ### Nested requests
 
-Facebook Query Builder supports [nested requests](https://developers.facebook.com/docs/graph-api/using-graph-api/v2.0#fieldexpansion) so you can get a lot more data with just one call to Graph.
-
-> **Note:** Facebook calls endpoints on the Graph API "edges". This package adopts the same nomenclature.
+The bread and butter of the Facebook Query Builder is its support for [nested requests](https://developers.facebook.com/docs/graph-api/using-graph-api/v2.0#fieldexpansion). Nested requests allow you to get a lot of data from the Graph API with just one request.
 
 The following example will get the logged in user's name & first 5 photos they are tagged in with just one call to Graph.
 
 ```php
 $photos = $fqb->edge('photos')->fields('id', 'source')->limit(5);
-$user = $fqb->object('me')->fields('name', $photos)->get();
+$user = $fqb->node('me')->fields('name', $photos)->get();
 ```
 
 And edges can have other edges embedded in them to allow for infinite deepness. This allows you to do fairly complex calls to Graph while maintaining very readable code.
@@ -238,7 +266,7 @@ $likes = $fqb->edge('likes');
 $comments = $fqb->edge('comments')->fields('message')->limit(2);
 $photos = $fqb->edge('photos')->fields('id', 'source', $comments, $likes)->limit(10);
 
-$user = $fqb->object('user_id')->fields('name', $photos)->get();
+$user = $fqb->node('user_id')->fields('name', $photos)->get();
 ```
 
 
@@ -263,10 +291,10 @@ Performs a `GET` request to Graph and returns the response in the form of a coll
 
 ```php
 // Get the logged in user's profile
-$user = $fqb->object('me')->get();
+$user = $fqb->node('me')->get();
 
 // Get a list of test users for this app
-$test_users = $fqb->object('my_app_id/accounts/test-users')->get();
+$test_users = $fqb->node('my_app_id/accounts/test-users')->get();
 ```
 
 
@@ -278,24 +306,24 @@ Sends a `POST` request to Graph and returns the response in the form of a collec
 // Update a page's profile
 $new_about_data = ['about' => 'This is the new about section!'];
 
-$response = $fqb->object('page_id')->with($new_about_data)->post();
+$response = $fqb->node('page_id')->with($new_about_data)->post();
 
 
 // Like a photo
-$response = $fqb->object('photo_id/likes')->post();
+$response = $fqb->node('photo_id/likes')->post();
 
 
 // Post a status update for the logged in user
 $data = ['message' => 'My witty status update.'];
 
-$response = $fqb->object('me/feed')->with($data)->post();
+$response = $fqb->node('me/feed')->with($data)->post();
 $status_update_id = $response['id'];
 
 
 // Post a comment to a status update
 $comment = ['message' => 'My witty comment on your status update.'];
 
-$response = $fqb->object('status_update_id/comments')->with($comment)->post();
+$response = $fqb->node('status_update_id/comments')->with($comment)->post();
 ```
 
 
@@ -305,10 +333,10 @@ Sends a `DELETE` request to Graph and returns the response in the form of a coll
 
 ```php
 // Delete a comment
-$response = $fqb->object('comment_id')->delete();
+$response = $fqb->node('comment_id')->delete();
 
 // Unlike a photo
-$response = $fqb->object('photo_id/likes')->delete();
+$response = $fqb->node('photo_id/likes')->delete();
 ```
 
 
@@ -325,7 +353,7 @@ Set the fields and edges for this `Edge`. The fields and edges can be passed as 
 $edge_one = $fqb->edge('my_edge')->fields('my_field', 'my_other_field');
 $edge_two = $fqb->edge('my_edge')->fields(['field_one', 'field_two']);
 
-$obj = $fqb->object('some_object')->fields('some_field', $edge_one, $edge_two)->get();
+$obj = $fqb->node('some_object')->fields('some_field', $edge_one, $edge_two)->get();
 ```
 
 
@@ -348,12 +376,12 @@ If used in conjunction with the `post()` or `delete()` methods, the data will be
 // Post a new comment to a photo
 $comment_data = ['message' => 'My new comment!'];
 
-$response = $fqb->object('photo_id')->with($comment_data)->post('comments');
+$response = $fqb->node('photo_id')->with($comment_data)->post('comments');
 
 // Update an existing comment
 $comment_data = ['message' => 'My updated comment.'];
 
-$response = $fqb->object('comment_id')->with($comment_data)->post();
+$response = $fqb->node('comment_id')->with($comment_data)->post();
 ```
 
 If used in conjunction with a `get()` request, the data will be appended in the URL either in the sub edge or root edge.
@@ -361,7 +389,7 @@ If used in conjunction with a `get()` request, the data will be appended in the 
 ```php
 // Get the large version of a page profile picture
 $profile_picture = $fqb->edge('picture')->with(['type' => 'large']);
-$page_info = $fqb->object('some_page_id')->fields('name', $profile_picture)->get();
+$page_info = $fqb->node('some_page_id')->fields('name', $profile_picture)->get();
 ```
 
 
@@ -397,7 +425,7 @@ Requests sent to Graph are represented by 2 value objects, `RootEdge` & `Edge`. 
 For debugging, you can access `RootEdge` as a string to get the URL that will be sent to Graph.
 
 ```php
-$root_edge = $fqb->object('me')->fields('id', 'email');
+$root_edge = $fqb->node('me')->fields('id', 'email');
 
 echo $root_edge;
 ```
@@ -425,7 +453,7 @@ The above example will output:
 
 ```php
 $photos = $fqb->edge('photos')->fields('id', 'source')->limit(5);
-$root_edge = $fqb->object('me')->fields('email', $photos);
+$root_edge = $fqb->node('me')->fields('email', $photos);
 
 echo $root_edge;
 ```
@@ -440,7 +468,7 @@ The above example will output:
 All responses from Graph are returned as a collection object that has many useful methods for playing with the response data.
 
 ```php
-$user = $fqb->object('me')->fields('email', 'photos')->get();
+$user = $fqb->node('me')->fields('email', 'photos')->get();
 
 // Access properties like an array
 $email = $user['email'];
@@ -467,16 +495,18 @@ Check out the [Collection class](https://github.com/SammyK/FacebookQueryBuilder/
 
 ### GraphObject
 
-The `GraphObject` collection represents any set of data Graph would consider an "object". This could be a user, page, photo, etc. When you request an object by ID from Graph, the response will be returned as a `GraphObject` collection.
+The `GraphObject` collection represents any set of data Graph would consider a "node". This could be a user, page, photo, etc. When you request an object by ID from Graph, the response will be returned as a `GraphObject` collection.
+
+> **Note:** As of version 2.0 of the Facebook Query Builder, the `GraphObject` object was ported to the official Facebook PHP SDK v4.1.
 
 ```php
-$my_graph_object = $fqb->object('object_id')->get();
+$my_graph_object = $fqb->node('object_id')->get();
 ```
 
 `GraphObject`'s can also contain `GraphCollection`'s if you request an edge in the fields list.
 
 ```php
-$my_graph_object = $fqb->object('object_id')->fields('id','likes')->get();
+$my_graph_object = $fqb->node('object_id')->fields('id','likes')->get();
 
 $my_graph_collection = $my_graph_object['likes'];
 ```
@@ -486,8 +516,10 @@ $my_graph_collection = $my_graph_object['likes'];
 
 The `GraphCollection` collection is a collection of `GraphObject`'s.
 
+> **Note:** As of version 2.0 of the Facebook Query Builder, the `GraphCollection` object was ported to the official Facebook PHP SDK v4.1 as a `GraphList`.
+
 ```php
-$my_graph_collection = $fqb->object('me/statuses')->get();
+$my_graph_collection = $fqb->node('me/statuses')->get();
 ```
 
 ## Overwriting Persistent Storage
