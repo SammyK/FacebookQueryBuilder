@@ -52,7 +52,7 @@ class GraphEdgeTest extends PHPUnit_Framework_TestCase
     public function the_modifiers_can_be_set_by_sending_an_array()
     {
         $edge = new GraphEdge('foo');
-        $edge->with(['bar' => 'baz']);
+        $edge->modifiers(['bar' => 'baz']);
 
         $this->assertEquals(['bar' => 'baz'], $edge->getModifiers());
     }
@@ -61,21 +61,21 @@ class GraphEdgeTest extends PHPUnit_Framework_TestCase
     public function modifiers_get_compiled_with_proper_syntax()
     {
         $edge = new GraphEdge('foo');
-        $modifiers = $edge->compileModifiers();
-        $this->assertEquals('', $modifiers);
+        $modifiers = $edge->asUrl();
+        $this->assertEquals('foo', $modifiers);
 
         $edge2 = new GraphEdge('bar');
-        $edge2->with(['bar' => 'baz']);
-        $modifiers2 = $edge2->compileModifiers();
-        $this->assertEquals('.bar(baz)', $modifiers2);
+        $edge2->modifiers(['bar' => 'baz']);
+        $modifiers2 = $edge2->asUrl();
+        $this->assertEquals('bar.bar(baz)', $modifiers2);
 
         $edge3 = new GraphEdge('baz');
-        $edge3->with([
+        $edge3->modifiers([
                 'foo' => 'bar',
                 'faz' => 'baz',
             ]);
-        $modifiers3 = $edge3->compileModifiers();
-        $this->assertEquals('.foo(bar).faz(baz)', $modifiers3);
+        $modifiers3 = $edge3->asUrl();
+        $this->assertEquals('baz.foo(bar).faz(baz)', $modifiers3);
     }
 
     /** @test */
@@ -108,9 +108,9 @@ class GraphEdgeTest extends PHPUnit_Framework_TestCase
     public function an_edge_with_fields_and_limit_and_modifiers_will_convert_to_string()
     {
         $edge = new GraphEdge('foo', ['bar', 'baz'], 3);
-        $edge->with(['foo' => 'bar']);
+        $edge->modifiers(['foo' => 'bar']);
 
-        $this->assertEquals('foo.limit(3){bar,baz}.foo(bar)', (string) $edge);
+        $this->assertEquals('foo.limit(3).foo(bar){bar,baz}', (string) $edge);
     }
 
     /** @test */
@@ -171,5 +171,89 @@ class GraphEdgeTest extends PHPUnit_Framework_TestCase
         $expected_edge = 'root{foo,bar,' . $expected_one .'}';
 
         $this->assertEquals($expected_edge, (string) $edge);
+    }
+
+    /** @test */
+    public function embedded_edges_can_be_traversed_recursively()
+    {
+        $edge_r_four = new GraphEdge('r_four', ['bla'], 4);
+
+        $edge_four = new GraphEdge('four', ['bla'], 4);
+        $edge_three = new GraphEdge('three', ['faz', 'boo', $edge_four, $edge_r_four], 3);
+        $edge_two = new GraphEdge('two', ['faz', 'boo', $edge_three], 2);
+
+        $edge_r_three = new GraphEdge('r_three');
+        $edge_r_two = new GraphEdge('r_two', [$edge_r_three]);
+
+        $node = new GraphEdge('one', ['bar', 'baz', $edge_two, $edge_r_two], 1);
+
+        $children = $node->getChildEdges();
+
+        $expected = [
+            ['one', 'two', 'three', 'four'],
+            ['one', 'two', 'three', 'r_four'],
+            ['one', 'r_two', 'r_three'],
+        ];
+
+        $this->assertEquals($expected, $children);
+    }
+
+    /** @test */
+    public function node_name_is_returned_when_there_are_no_children()
+    {
+        $node = new GraphEdge('foo', ['bar', 'baz'], 1);
+
+        $children = $node->getChildEdges();
+
+        $this->assertEquals([['foo']], $children);
+    }
+
+    /** @test */
+    public function the_node_can_be_converted_to_an_endpoint()
+    {
+        $node = new GraphEdge('one', ['bar', 'baz'], 1);
+
+        $endpoints = $node->toEndpoints();
+
+        $this->assertEquals(['/one'], $endpoints);
+    }
+
+    /** @test */
+    public function the_node_can_be_converted_to_an_endpoint_with_embedded_endpoints()
+    {
+        $edge_four = new GraphEdge('four', ['bla'], 4);
+        $edge_three = new GraphEdge('three', ['faz', 'boo', $edge_four], 3);
+        $edge_two = new GraphEdge('two', ['faz', 'boo', $edge_three], 2);
+        $node = new GraphEdge('one', ['bar', 'baz', $edge_two], 1);
+
+        $endpoints = $node->toEndpoints();
+
+        $this->assertEquals(['/one/two/three/four'], $endpoints);
+    }
+
+    /** @test */
+    public function the_node_can_be_converted_to_an_endpoint_with_multiple_embedded_endpoints()
+    {
+        $edge_tags = new GraphEdge('tags');
+
+        $edge_d = new GraphEdge('d');
+        $edge_c = new GraphEdge('c', [$edge_d]);
+        $edge_b = new GraphEdge('b', [$edge_c, $edge_tags]);
+        $edge_a = new GraphEdge('a', [$edge_b]);
+
+        $edge_four = new GraphEdge('four', ['bla'], 4);
+        $edge_three = new GraphEdge('three', ['faz', 'boo', $edge_four], 3);
+        $edge_two = new GraphEdge('two', ['faz', 'boo', $edge_three], 2);
+        $node = new GraphEdge('one', [$edge_a, 'bar', 'baz', $edge_two, 'foo'], 1);
+
+        $endpoints = $node->toEndpoints();
+
+        $expected = [
+            '/one/a/b/c/d',
+            '/one/a/b/tags',
+            '/one/two/three/four',
+        ];
+
+        $this->assertEquals($expected, $endpoints);
     }
 }

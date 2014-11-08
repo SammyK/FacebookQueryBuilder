@@ -9,12 +9,16 @@ use Facebook\Exceptions\FacebookResponseException;
  * Requires an access token with the "read_stream" extended permission.
  */
 
+$node = $fqb
+    ->node('me/statuses')
+    ->limit(10);
+
+echo '<h1>Last 10 Statuses</h1>' . "\n\n";
+echo '<p><pre>GET ' . htmlentities($node->asUrl()) . '</pre></p>' . "\n\n";
+
 try
 {
-    $response = $fqb
-        ->node('me/statuses')
-        ->limit(10)
-        ->get();
+    $response = $node->get();
     $statuses = $response->getGraphList();
 }
 catch (FacebookResponseException $e)
@@ -27,7 +31,6 @@ catch (FacebookResponseException $e)
 
 if (count($statuses) > 0)
 {
-    echo '<h1>Last 10 Statuses Response</h1>' . "\n\n";
     foreach ($statuses as $status)
     {
         var_dump($status['message']);

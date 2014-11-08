@@ -7,10 +7,11 @@
 - FQB is now a decorator for the `Facebook\Facebook` super service.
 - Renamed `Edge` to `GraphEdge`.
 - Renamed `RootEdge` to `GraphNode`.
+- `GraphEdge` is now a child of `GraphNode` instead of the other way around. I must have been drunk.
 - Removed all the classes that were ported over to the official Facebook PHP SDK v4.1:
     - `AccessToken`
     - `BaseGraphObject` & `GraphObjectInitializer` (ported over as `GraphObjectFactory`)
-    - `Collection`
+    - `Collection` (ported with limited functionality)
     - `GraphCollection` (ported over as `GraphList`)
     - `GraphObject` (ported into existing `GraphObject`)
     - `Response` (ported into existing `FacebookResponse`)
@@ -27,11 +28,14 @@
 - Removed `FQB::auth()` since obtaining an access token is now done with v4.1 of the SDK directly.
 - Removed `FQB::getConnection()` & `FQB::setConnection()` since making requests to Graph in v4.1 of the SDK doesn't suck.
 - @TODO in 4.1: Removed `FQB::setRedirectHelperAlias()` in favor of setting the `persistent_state_handler` via constructor.
-- Added `FQB::modifiers()` as an alias to `FQB::with()` so that the nomenclature makes more sense on GET requests.
+- Renamed `FQB::with()` to `FQB::withPostData()` to disambiguate it from modifiers.
+- Added `FQB::modifiers()` and `GraphEdge::modifiers()` to replace what `FQB::with()` used to do so that the nomenclature makes more sense.
 - Added `FQB::etag()` to support eTags.
 - Added `FQB::accessToken()` to overwrite the `default_access_token`.
 - Renamed `GraphEdge::compileEdge()` and `GraphNode::compileEdge()` to `asUrl()`.
 - Renamed `FQB::getQueryUrl()` to `asUrl()`.
+- Added `FQB::asGetRequest()`, `FQB::asPostRequest()` and `FQB::asDeleteRequest()` to generate `\Facebook\Entities\FacebookRequest`'s for a batch request.
+- Fixed bug that put modifiers after the fields list that caused the following error from Graph: `Syntax error "Expected end of string instead of "."." at character n`
 
 
 ## 1.1.2 - November 5, 2014

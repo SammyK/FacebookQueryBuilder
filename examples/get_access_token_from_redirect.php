@@ -12,6 +12,8 @@ $facebookApp = $fqb->getApp();
 $facebookClient = $fqb->getClient();
 $redirectHelper = new FacebookRedirectLoginHelper($facebookApp);
 
+echo '<h1>Get AccessToken From Redirect</h1>' . "\n\n";
+
 try
 {
     $token = $redirectHelper->getAccessToken($facebookClient, $config['callback_url']);
@@ -27,14 +29,21 @@ if ( ! $token)
     /**
      * No token returned. Show login link.
      */
-    $scope = ['email', 'read_stream']; // Optional
+    $scope = [ // Optional
+        'email',
+        'user_events',
+        'user_likes',
+        'user_status',
+        'user_photos',
+        'read_stream',
+        'publish_actions',
+        ];
     $login_url = $redirectHelper->getLoginUrl($config['callback_url'], $scope);
 
     echo '<a href="' . $login_url . '">Log in with Facebook</a>';
     exit;
 }
 
-echo '<h1>Returned AccessToken Object</h1>' . "\n\n";
 var_dump($token);
 
 /**
@@ -54,8 +63,12 @@ catch (FacebookResponseException $e)
 
 var_dump($token_info->asArray());
 
+echo '<hr />' . "\n\n";
+
 if ( ! $token->isLongLived())
 {
+    echo '<h1>Long-lived AccessToken Object</h1>' . "\n\n";
+
     /**
      * Extend the access token.
      */
@@ -71,7 +84,6 @@ if ( ! $token->isLongLived())
         exit;
     }
 
-    echo '<h1>Long-lived AccessToken Object</h1>' . "\n\n";
     var_dump($token);
 
     /**
@@ -90,7 +102,11 @@ if ( ! $token->isLongLived())
     }
 
     var_dump($token_info->asArray());
+
+    echo '<hr />' . "\n\n";
 }
+
+echo '<h1>User Data</h1>' . "\n\n";
 
 /**
  * Get the logged in user's profile.
@@ -111,5 +127,4 @@ catch (FacebookResponseException $e)
     exit;
 }
 
-echo '<h1>User Data</h1>' . "\n\n";
 var_dump($user->asArray());

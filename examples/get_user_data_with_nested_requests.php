@@ -33,14 +33,18 @@ $events_user_attending = $fqb
     ->fields('name', 'start_time', 'end_time', $event_photos)
     ->limit(4);
 
+// Get the logged in user's name, last profile update time, and all those edges
+$node = $fqb
+    ->node('me')
+    ->fields('name', 'updated_time', $photos_user_tagged_in, $pages_user_likes, $events_user_attending);
+
+echo '<h1>Get user, photos, pages and events</h1>' . "\n\n";
+echo '<p><pre>GET ' . htmlentities($node->asUrl()) . '</pre></p>' . "\n\n";
+
 try
 {
-    // Get the logged in user's name, last profile update time, and all those edges
-    $request = $fqb
-        ->node('me')
-        ->fields('name', 'updated_time', $photos_user_tagged_in, $pages_user_likes, $events_user_attending);
-    $response = $request->get();
-    $user_data = $response->getGraphObject();
+    $response = $node->get();
+    $user_data = $response->getGraphUser();
 }
 catch (FacebookResponseException $e)
 {
@@ -50,12 +54,11 @@ catch (FacebookResponseException $e)
     exit;
 }
 
-echo '<h1>Request URL to Graph</h1>' . "\n\n";
-echo '<pre>' . (string) $request . '</pre>' . "\n\n";
-
 echo '<h1>User Data</h1>' . "\n\n";
 echo '<p>Name: ' . $user_data['name'] .  "\n\n";
 echo '<p>Last Update: ' . $user_data['updated_time']->format('r') .  "\n\n";
+
+echo '<hr />' . "\n\n";
 
 echo '<h1>Last 5 Photos</h1>' . "\n\n";
 if (isset($user_data['photos']))
@@ -70,6 +73,8 @@ else
     echo '<p>No photos returned. Make sure you have the "user_photos" extended permission for this access token.' . "\n\n";
 }
 
+echo '<hr />' . "\n\n";
+
 echo '<h1>Last 3 Liked Pages</h1>' . "\n\n";
 if (isset($user_data['likes']))
 {
@@ -82,6 +87,8 @@ else
 {
     echo '<p>No liked pages returned. Make sure you have the "user_likes" extended permission for this access token.' . "\n\n";
 }
+
+echo '<hr />' . "\n\n";
 
 echo '<h1>Latest 4 Events and 2 Photos From Each Event</h1>' . "\n\n";
 if (isset($user_data['events']))

@@ -14,14 +14,18 @@ $facebook_app = $fqb->getApp();
 // Make an app access token
 $app_access_token = $facebook_app->getAccessToken();
 
+$node = $fqb
+    ->node($config['app_id'] . '/accounts/test-users')
+    ->accessToken($app_access_token)
+    ->fields('id', 'login_url')
+    ->limit(10);
+
+echo '<h1>Test Users For App ID ' .  $config['app_id']  . '</h1>' . "\n\n";
+echo '<p><pre>GET ' . htmlentities($node->asUrl()) . '</pre></p>' . "\n\n";
+
 try
 {
-    $response = $fqb
-        ->node($config['app_id'] . '/accounts/test-users')
-        ->accessToken($app_access_token)
-        ->fields('id', 'login_url')
-        ->limit(10)
-        ->get();
+    $response = $node->get();
 
     $users = $response->getGraphList();
 }
@@ -35,7 +39,6 @@ catch (FacebookResponseException $e)
 
 if (count($users) > 0)
 {
-    echo '<h1>Test Users For App ID ' .  $config['app_id']  . '</h1>' . "\n\n";
     foreach ($users as $user)
     {
         var_dump($user->asArray());

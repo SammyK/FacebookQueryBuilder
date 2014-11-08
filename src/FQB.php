@@ -26,12 +26,11 @@ class FQB extends Facebook
     protected $fqb_etag;
 
     /**
-     * Data that will be sent in the body of a POST or DELETE request
-     * and in the URL query params for GET requests.
+     * Data that will be sent in the body of a POST request.
      *
      * @var array
      */
-    protected $modifiers = [];
+    protected $post_data = [];
 
     /**
      * Remembers the last config sent to the constructor.
@@ -73,20 +72,9 @@ class FQB extends Facebook
      */
     public function get($endpoint = null, $accessToken = null, $eTag = null, $graphVersion = null)
     {
-        $this->prepareGraphNodeForGetRequest();
         $url = $this->asUrl();
-        return parent::get($url, $this->fqb_access_token, $this->fqb_etag);
-    }
 
-    /**
-     * Prepare the root edge for a GET request.
-     */
-    public function prepareGraphNodeForGetRequest()
-    {
-        if (count($this->modifiers) > 0)
-        {
-            $this->graph_node->with($this->modifiers);
-        }
+        return parent::get($url, $this->fqb_access_token, $this->fqb_etag);
     }
 
     /**
@@ -106,7 +94,8 @@ class FQB extends Facebook
     public function post($endpoint = null, array $params = [], $accessToken = null, $eTag = null, $graphVersion = null)
     {
         $url = $this->asUrl();
-        return parent::post($url, $this->modifiers, $this->fqb_access_token, $this->fqb_etag);
+
+        return parent::post($url, $this->post_data, $this->fqb_access_token, $this->fqb_etag);
     }
 
     /**
@@ -125,7 +114,63 @@ class FQB extends Facebook
     public function delete($endpoint = null, $accessToken = null, $eTag = null, $graphVersion = null)
     {
         $url = $this->asUrl();
+
         return parent::delete($url, $this->fqb_access_token, $this->fqb_etag);
+    }
+
+    /**
+     * Make a FacebookRequest from a GET request.
+     *
+     * @return \Facebook\Entities\FacebookRequest
+     */
+    public function asGetRequest()
+    {
+        $url = $this->asUrl();
+
+        return parent::request('GET', $url, [], $this->fqb_access_token, $this->fqb_etag);
+    }
+
+    /**
+     * Make a FacebookRequest from a POST request.
+     *
+     * @return \Facebook\Entities\FacebookRequest
+     */
+    public function asPostRequest()
+    {
+        $url = $this->asUrl();
+
+        return parent::request('POST', $url, $this->post_data, $this->fqb_access_token, $this->fqb_etag);
+    }
+
+    /**
+     * Make a FacebookRequest from a DELETE request.
+     *
+     * @return \Facebook\Entities\FacebookRequest
+     */
+    public function asDeleteRequest()
+    {
+        $url = $this->asUrl();
+
+        return parent::request('DELETE', $url, [], $this->fqb_access_token, $this->fqb_etag);
+    }
+
+    /**
+     * Sends a batched request to Graph and returns the result.
+     *
+     * @param array $requests
+     * @param \Facebook\Entities\AccessToken|string|null $accessToken
+     * @param string|null $graphVersion
+     *
+     * @return \Facebook\Entities\FacebookBatchResponse
+     *
+     * @throws \Facebook\Exceptions\FacebookSDKException
+     */
+    public function sendBatchRequest(
+        array $requests,
+        $accessToken = null,
+        $graphVersion = null)
+    {
+        return parent::sendBatchRequest($requests, $this->fqb_access_token);
     }
 
     /**
@@ -138,14 +183,28 @@ class FQB extends Facebook
      */
     public function search($search, $type = null)
     {
-        $fqb = $this->node('search')->with(['q' => $search]);
+        $fqb = $this->node('search')->modifiers(['q' => $search]);
 
         if ($type)
         {
-            $fqb->with(['type' => $type]);
+            $fqb->modifiers(['type' => $type]);
         }
 
         return $fqb;
+    }
+
+    /**
+     * Alias to method on GraphNode.
+     *
+     * @param array $data
+     *
+     * @return \SammyK\FacebookQueryBuilder\FQB
+     */
+    public function modifiers(array $data)
+    {
+        $this->graph_node->modifiers($data);
+
+        return $this;
     }
 
     /**
@@ -165,7 +224,7 @@ class FQB extends Facebook
     /**
      * Alias to method on GraphNode.
      *
-     * @param array|string $fields The fields we want on the root edge
+     * @param array|string $fields
      *
      * @return \SammyK\FacebookQueryBuilder\FQB
      */
@@ -210,28 +269,15 @@ class FQB extends Facebook
     }
 
     /**
-     * Alias of modifiers().
+     * Sets an array of post data to send with the request.
      *
      * @param array $data
      *
      * @return \SammyK\FacebookQueryBuilder\FQB
      */
-    public function with(array $data)
+    public function withPostData(array $data)
     {
-        return $this->modifiers($data);
-    }
-
-    /**
-     * Data that will be sent in the body of a POST or DELETE request
-     * and in the URL query params for GET requests.
-     *
-     * @param array $data
-     *
-     * @return \SammyK\FacebookQueryBuilder\FQB
-     */
-    public function modifiers(array $data)
-    {
-        $this->modifiers = array_merge($this->modifiers, $data);
+        $this->post_data = array_merge($this->post_data, $data);
 
         return $this;
     }
@@ -259,6 +305,7 @@ class FQB extends Facebook
     public function node($graph_node_name)
     {
         $this->fqb_config['fqb:graph_node_name'] = $graph_node_name;
+
         return new static($this->fqb_config);
     }
 

@@ -1,174 +1,7 @@
 <?php namespace SammyK\FacebookQueryBuilder;
 
-class GraphEdge
+class GraphEdge extends GraphNode
 {
-    /**
-     * The name of the edge.
-     *
-     * @var string
-     */
-    protected $name;
-
-    /**
-     * The fields & edges that we want to pull from the edge.
-     *
-     * @var array
-     */
-    protected $fields = [];
-
-    /**
-     * The modifiers that will be appended to the edge.
-     *
-     * @var array
-     */
-    protected $modifiers = [];
-
-    /**
-     * The maximum number of records to return for this edge.
-     *
-     * @var int
-     */
-    protected $limit;
-
-    /**
-     * Create a new edge value object.
-     *
-     * @param string $name
-     * @param array $fields
-     * @param int $limit
-     */
-    public function __construct($name, $fields = [], $limit = 0)
-    {
-        $this->name = $name;
-        $this->fields = $fields;
-        $this->limit = $limit;
-    }
-
-    /**
-     * Set the limit for this edge.
-     *
-     * @param int $limit
-     * @return $this
-     */
-    public function limit($limit)
-    {
-        $this->limit = $limit;
-
-        return $this;
-    }
-
-    /**
-     * Gets the limit for this edge.
-     *
-     * @return int
-     */
-    public function getLimit()
-    {
-        return $this->limit;
-    }
-
-    /**
-     * Set the fields for this edge.
-     *
-     * @param mixed $fields
-     * @return $this
-     */
-    public function fields($fields)
-    {
-        if ( ! is_array($fields))
-        {
-            $fields = func_get_args();
-        }
-
-        $this->fields = array_merge($this->fields, $fields);
-
-        return $this;
-    }
-
-    /**
-     * Gets the fields for this edge.
-     *
-     * @return array
-     */
-    public function getFields()
-    {
-        return $this->fields;
-    }
-
-    /**
-     * Modifier data to be sent with this edge.
-     *
-     * @param array $data
-     *
-     * @return \SammyK\FacebookQueryBuilder\GraphEdge
-     */
-    public function with(array $data)
-    {
-        $this->modifiers = array_merge($this->modifiers, $data);
-
-        return $this;
-    }
-
-    /**
-     * Gets the modifiers for this edge.
-     *
-     * @return array
-     */
-    public function getModifiers()
-    {
-        return $this->modifiers;
-    }
-
-    /**
-     * Compile the modifier values.
-     *
-     * @return string
-     */
-    public function compileModifiers()
-    {
-        if (count($this->modifiers) === 0) return '';
-
-        $processed_modifiers = [];
-
-        foreach ($this->modifiers as $k => $v)
-        {
-            $processed_modifiers[] = $k . '(' . $v . ')';
-        }
-
-        $modifiers = implode('.', $processed_modifiers);
-
-        return $modifiers ? '.' . $modifiers : '';
-    }
-
-    /**
-     * Compile the field values.
-     *
-     * @return string
-     */
-    public function compileFields()
-    {
-        if (count($this->fields) === 0) return '';
-
-        $processed_fields = [];
-
-        foreach ($this->fields as $v)
-        {
-            $processed_fields[] = $v instanceof GraphEdge ? (string) $v : urlencode($v);
-        }
-
-        return '{' . implode(',',$processed_fields) . '}';
-    }
-
-    /**
-     * Compile the limit value.
-     *
-     * @return string
-     */
-    public function compileLimit()
-    {
-        return $this->limit > 0 ? '.limit(' . $this->limit . ')' : '';
-    }
-
     /**
      * Convert the nested query into an array of endpoints.
      *
@@ -221,22 +54,51 @@ class GraphEdge
     }
 
     /**
-     * Compile the final URL as a string.
-     *
-     * @return string
+     * Compile the modifier values.
      */
-    public function asUrl()
+    public function compileModifiers()
     {
-        return $this->name . $this->compileLimit() . $this->compileFields() . $this->compileModifiers();
+        if (count($this->modifiers) === 0) return;
+
+        $processed_modifiers = [];
+
+        foreach ($this->modifiers as $k => $v)
+        {
+            $processed_modifiers[] = urlencode($k) . '(' . urlencode($v) . ')';
+        }
+
+        $this->compiled_values[] = '.' . implode('.', $processed_modifiers);
     }
 
     /**
-     * Compile the final URL as a string.
+     * Compile the field values.
+     */
+    public function compileFields()
+    {
+        if (count($this->fields) === 0) return;
+
+        $processed_fields = [];
+
+        foreach ($this->fields as $v)
+        {
+            $processed_fields[] = $v instanceof GraphEdge ? $v->asUrl() : urlencode($v);
+        }
+
+        $this->compiled_values[] = '{' . implode(',',$processed_fields) . '}';
+    }
+
+    /**
+     * Compile the the full URL.
      *
      * @return string
      */
-    public function __toString()
+    public function compileUrl()
     {
-        return $this->asUrl();
+        $append = '';
+        if (count($this->compiled_values) > 0)
+        {
+            $append = implode('', $this->compiled_values);
+        }
+        return $this->name . $append;
     }
 }

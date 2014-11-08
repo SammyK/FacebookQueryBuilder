@@ -75,12 +75,10 @@ class FQBTest extends PHPUnit_Framework_TestCase
     public function search_method_will_return_a_search_instance()
     {
         $fqb = $this->fqb->search('foo search');
-        $fqb->prepareGraphNodeForGetRequest();
         $this->assertInstanceOf('SammyK\FacebookQueryBuilder\FQB', $fqb);
         $this->assertEquals('/search?q=foo+search', $fqb->asUrl());
 
         $fqb2 = $this->fqb->search('foo search', 'bar');
-        $fqb2->prepareGraphNodeForGetRequest();
         $this->assertEquals('/search?q=foo+search&type=bar', $fqb2->asUrl());
     }
 }

@@ -7,9 +7,15 @@ use Facebook\Exceptions\FacebookResponseException;
 /**
  * Get the logged in user's profile.
  */
+
+$node = $fqb->node('me');
+
+echo '<h1>Logged In User\'s Profile</h1>' . "\n\n";
+echo '<p><pre>GET ' . htmlentities($node->asUrl()) . '</pre></p>' . "\n\n";
+
 try
 {
-    $response = $fqb->node('me')->get();
+    $response = $node->get();
     $user = $response->getGraphUser();
 }
 catch (FacebookResponseException $e)
@@ -20,5 +26,4 @@ catch (FacebookResponseException $e)
     exit;
 }
 
-echo '<h1>Logged In User\'s Profile</h1>' . "\n\n";
 var_dump($user->asArray());

@@ -13,16 +13,19 @@ $limit = 5;
 $offset = isset($_GET['offset']) && is_numeric($_GET['offset']) ? $_GET['offset'] : 0;
 $next_offset = $offset + $limit;
 
+// Get the large version of the page profile picture
+$profile_picture = $fqb->edge('picture')->modifiers(['type' => 'large']);
+$node = $fqb->search('West Coast Swing', 'page')
+                ->fields('id', 'name', 'link', $profile_picture)
+                ->modifiers(['offset' => $offset])
+                ->limit($limit);
+
+echo '<h1>Search for "West Coast Swing" Facebook pages</h1>' . "\n\n";
+echo '<p><pre>GET ' . htmlentities($node->asUrl()) . '</pre></p>' . "\n\n";
+
 try
 {
-    // Get the large version of the page profile picture
-    $profile_picture = $fqb->edge('picture')->with(['type' => 'large']);
-    $response = $fqb->search('West Coast Swing', 'page')
-        ->fields('id', 'name', 'link', $profile_picture)
-        ->with(['offset' => $offset])
-        ->limit($limit)
-        ->get();
-    $list_of_pages = $response->getGraphList();
+    $response = $node->get();
 }
 catch (FacebookResponseException $e)
 {
@@ -32,9 +35,9 @@ catch (FacebookResponseException $e)
     exit;
 }
 
+$list_of_pages = $response->getGraphList();
 if (count($list_of_pages) > 0)
 {
-    echo '<h1>Search for "West Coast Swing" Facebook pages</h1>' . "\n\n";
     foreach ($list_of_pages as $page)
     {
         var_dump($page->asArray());

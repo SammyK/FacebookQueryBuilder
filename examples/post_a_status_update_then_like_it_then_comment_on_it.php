@@ -9,29 +9,42 @@ use Facebook\Exceptions\FacebookResponseException;
  * Requires an access token with the "publish_actions" extended permission.
  */
 
+// Post the status update
+$status_update = ['message' => 'My witty status update.'];
+$node = $fqb->node('me/feed')->withPostData($status_update);
+
+echo '<h1>Post A Status Update</h1>' . "\n\n";
+echo '<p><pre>POST ' . htmlentities($node->asUrl()) . "\n\n" . print_r($status_update, true) . '</pre></p>' . "\n\n";
+
 try
 {
-    // Post the status update
-    $status_update = ['message' => 'My witty status update.'];
-    $response = $fqb->node('me/feed')->with($status_update)->post();
+    $response = $node->post();
     $data = $response->getGraphObject();
-    echo '<h1>Post Status Update Response</h1>' . "\n\n";
     var_dump($data->asArray());
+    echo '<hr />';
 
     $status_update_id = $data['id'];
 
     // Like it!
-    $response = $fqb->node($status_update_id . '/likes')->post();
+    $node = $fqb->node($status_update_id . '/likes');
+    echo '<h1>Like The Status Update</h1>' . "\n\n";
+    echo '<p><pre>POST ' . $node->asUrl() . '</pre></p>' . "\n\n";
+
+    $response = $node->post();
     $data = $response->getGraphObject();
-    echo '<h1>Like Status Update Response</h1>' . "\n\n";
     var_dump($data->asArray());
+    echo '<hr />';
 
     // Comment on it
     $comment = ['message' => 'My witty comment on your status update.'];
-    $response = $fqb->node($status_update_id . '/comments')->with($comment)->post();
+    $node = $fqb->node($status_update_id . '/comments')->withPostData($comment);
+    echo '<h1>Post A Comment</h1>' . "\n\n";
+    echo '<p><pre>POST ' . $node->asUrl() . "\n\n" . print_r($status_update, true) . '</pre></p>' . "\n\n";
+
+    $response = $node->post();
     $data = $response->getGraphObject();
-    echo '<h1>Post Comment Response</h1>' . "\n\n";
     var_dump($data->asArray());
+    echo '<hr />';
 
     echo '<h1>Now check your profile...</h1>' . "\n\n";
     echo '<p>You should see something like this...</p>' . "\n\n";
