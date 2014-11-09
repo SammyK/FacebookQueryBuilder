@@ -14,11 +14,11 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "facebook/php-sdk-v4": "~4.0",
-        "nesbot/Carbon": "*"
+        "facebook/php-sdk-v4": "~4.0.12",
+        "nesbot/Carbon": "~1.13.0"
     },
     "require-dev": {
-        "mockery/mockery": "dev-master@dev"
+        "mockery/mockery": "~0.9"
     },
     "autoload": {
         "psr-4": {

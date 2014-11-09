@@ -1,6 +1,11 @@
 # CHANGELOG
 
 
+## 1.1.3 - November 9, 2014
+
+- Updated version number of Facebook PHP SDK dependency so that it would not install v4.1 when `minimum-stability` is set to `dev`.
+
+
 ## 1.1.2 - November 5, 2014
 
 - Moved latest stable to 1.1 branch.
