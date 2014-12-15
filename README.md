@@ -5,10 +5,18 @@
 [![License](http://img.shields.io/badge/license-MIT-lightgrey.svg)](https://github.com/SammyK/FacebookQueryBuilder/blob/master/LICENSE)
 
 
-An elegant and efficient way to interface with Facebook's [Graph API](https://developers.facebook.com/docs/graph-api) using the latest [Facebook PHP SDK v4.1](https://github.com/facebook/facebook-php-sdk-v4). It's as easy as:
+A query builder that makes it easy to send complex & efficient [nested requests](https://developers.facebook.com/docs/graph-api/using-graph-api#fieldexpansion) to Facebook's [Graph API](https://developers.facebook.com/docs/graph-api) to get [lots of specific data back](https://www.sammyk.me/optimizing-request-queries-to-the-facebook-graph-api) with one request.
+
+Facebook Query Builder runs on the latest [Facebook PHP SDK v4.1](https://github.com/facebook/facebook-php-sdk-v4).
+
+It's as easy as:
 
 ```php
-$response = $fqb->node('me')->get();
+// Get the user's ID & email
+$response = $fqb->node('me')->fields(['id', 'email'])->get();
+
+// Post "Hello!" to a user's timeline
+$response = $fqb->node('me/feed')->with(['message' => 'Hello!'])->post();
 ```
 
 - [Introduction](#introduction)
