@@ -51,9 +51,9 @@ if (count($list_of_pages) > 0)
             do
             {
                 echo '<p>Likes:</p>' . "\n\n";
-                var_dump($likes);
+                var_dump($likes->asArray());
             }
-            while ($likes = $fqb->next($page['likes']));
+            while ($likes = $fqb->next($likes));
         }
         $page_count++;
     }
@@ -61,7 +61,7 @@ if (count($list_of_pages) > 0)
 
 
     echo '<hr />' . "\n\n";
-    echo '<a href="paginate_results.php?offset=' . $next_offset .'">Next Page &gt;</a>' . "\n\n";;
+    echo '<a href="paginate_results.php?offset=' . $next_offset .'">Next Page &gt;</a>' . "\n\n";
 }
 else
 {
