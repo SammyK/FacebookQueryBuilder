@@ -14,7 +14,7 @@ class FQB extends Facebook
     /**
      * The access token associated with this request.
      *
-     * @var \Facebook\Entities\AccessToken|string|null
+     * @var \Facebook\AccessToken|string|null
      */
     protected $fqb_access_token;
 
@@ -62,11 +62,11 @@ class FQB extends Facebook
      * The arguments are there to keep notices from showing up in strict mode.
      *
      * @param string $endpoint
-     * @param \Facebook\Entities\AccessToken|string|null $accessToken
+     * @param \Facebook\AccessToken|string|null $accessToken
      * @param string|null $eTag
      * @param string|null $graphVersion
      *
-     * @return \Facebook\Entities\FacebookResponse
+     * @return \Facebook\FacebookResponse
      *
      * @throws \Facebook\Exceptions\FacebookSDKException
      */
@@ -83,11 +83,11 @@ class FQB extends Facebook
      *
      * @param string $endpoint
      * @param array $params
-     * @param \Facebook\Entities\AccessToken|string|null $accessToken
+     * @param \Facebook\AccessToken|string|null $accessToken
      * @param string|null $eTag
      * @param string|null $graphVersion
      *
-     * @return \Facebook\Entities\FacebookResponse
+     * @return \Facebook\FacebookResponse
      *
      * @throws \Facebook\Exceptions\FacebookSDKException
      */
@@ -103,11 +103,11 @@ class FQB extends Facebook
      * The arguments are there to keep notices from showing up in strict mode.
      *
      * @param string $endpoint
-     * @param \Facebook\Entities\AccessToken|string|null $accessToken
+     * @param \Facebook\AccessToken|string|null $accessToken
      * @param string|null $eTag
      * @param string|null $graphVersion
      *
-     * @return \Facebook\Entities\FacebookResponse
+     * @return \Facebook\FacebookResponse
      *
      * @throws \Facebook\Exceptions\FacebookSDKException
      */
@@ -121,7 +121,7 @@ class FQB extends Facebook
     /**
      * Make a FacebookRequest from a GET request.
      *
-     * @return \Facebook\Entities\FacebookRequest
+     * @return \Facebook\FacebookRequest
      */
     public function asGetRequest()
     {
@@ -133,7 +133,7 @@ class FQB extends Facebook
     /**
      * Make a FacebookRequest from a POST request.
      *
-     * @return \Facebook\Entities\FacebookRequest
+     * @return \Facebook\FacebookRequest
      */
     public function asPostRequest()
     {
@@ -145,7 +145,7 @@ class FQB extends Facebook
     /**
      * Make a FacebookRequest from a DELETE request.
      *
-     * @return \Facebook\Entities\FacebookRequest
+     * @return \Facebook\FacebookRequest
      */
     public function asDeleteRequest()
     {
@@ -158,10 +158,10 @@ class FQB extends Facebook
      * Sends a batched request to Graph and returns the result.
      *
      * @param array $requests
-     * @param \Facebook\Entities\AccessToken|string|null $accessToken
+     * @param \Facebook\AccessToken|string|null $accessToken
      * @param string|null $graphVersion
      *
-     * @return \Facebook\Entities\FacebookBatchResponse
+     * @return \Facebook\FacebookBatchResponse
      *
      * @throws \Facebook\Exceptions\FacebookSDKException
      */
@@ -257,7 +257,7 @@ class FQB extends Facebook
     /**
      * Sets the access token.
      *
-     * @param \Facebook\Entities\AccessToken|string $access_token The access token to overwrite the default.
+     * @param \Facebook\AccessToken|string $access_token The access token to overwrite the default.
      *
      * @return \SammyK\FacebookQueryBuilder\FQB
      */
