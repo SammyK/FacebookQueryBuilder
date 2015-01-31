@@ -25,19 +25,28 @@ class AccessToken
      * @param string $access_token
      * @param int $expires_at
      */
-    public function __construct($access_token, $expires_at = 0)
+    public function __construct($access_token, $expires = 0)
     {
         $this->access_token = $access_token;
-        $this->setExpiresAtFromTimeStamp($expires_at);
+        // if $expires is 0 then call facebook to get expiration time of token
+        if($expires == 0)
+        {
+            $this->getInfo();
+        }
+        else
+        {
+            $this->setExpiresAtFromTimeStamp($expires);
+        }
     }
 
     /**
      * Setter for expires_at.
      *
-     * @param int $time_stamp
+     * @param int $expires
      */
-    public function setExpiresAtFromTimeStamp($time_stamp)
-    {
+    public function setExpiresAtFromTimeStamp($expires)
+    {   
+        $time_stamp = time() + $expires;
         $this->expires_at = Carbon::createFromTimeStamp($time_stamp);
     }
 
@@ -89,9 +98,13 @@ class AccessToken
         $data = $response->getResponse();
 
         $access_token = isset($data['access_token']) ? $data['access_token'] : null;
-        $expires_at = isset($data['expires_at']) ? $data['expires_at'] : 0;
-
-        return new static($access_token, $expires_at);
+        /**
+         * If facebook does not send `expires` in response that means token never expires. 
+         * So set its age to a year from now.
+         */
+        $expires = isset($data['expires']) ? $data['expires'] : 31536000;
+        
+        return new static($access_token, $expires);
     }
 
     /**
