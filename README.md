@@ -72,16 +72,13 @@ Facebook Query Builder is installed using [Composer](https://getcomposer.org/). 
 ```json
 {
     "require": {
-        "sammyk/facebook-query-builder": "~2.0"
+        "sammyk/facebook-query-builder": "~2.0@dev",
+        "facebook/php-sdk-v4": "~4.1.0@dev"
     }
 }
 ```
 
-Or via the command line in the root of your project installation.
-
-```bash
-$ composer require "sammyk/facebook-query-builder:~2.0"
-```
+> **Note:** The Facebook PHP SDK v4.1 is still in dev mode but has reached a feature-freeze until it is tagged as stable so there shouldn't be any breaking changes. :) But because it's in dev mode you'll need to require it explicitly in your require using the `@dev` minimum stability flag since [composer won't pull in a dev mode dependency of a dependency](https://getcomposer.org/doc/faqs/why-can%27t-composer-load-repositories-recursively.md).
 
 
 ## Usage
