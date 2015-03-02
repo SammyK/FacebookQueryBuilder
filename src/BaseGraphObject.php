@@ -36,7 +36,10 @@ class BaseGraphObject extends Collection
                 {
                     $items[$k] = new GraphCollection($v);
                 }
-                $items[$k] = new GraphObject($v['data']);
+                else
+                {
+                    $items[$k] = new GraphObject($v['data']);
+                }
             }
             elseif (is_array($v))
             {
