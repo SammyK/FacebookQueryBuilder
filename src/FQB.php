@@ -2,120 +2,101 @@
 
 use Facebook\Facebook;
 
-class FQB extends Facebook
+class FQB
 {
+    /**
+     * The Facebook PHP SDK v4.1 super service class.
+     *
+     * @var Facebook
+     */
+    private $fb;
+
     /**
      * The GraphNode we are working with.
      *
      * @var \SammyK\FacebookQueryBuilder\GraphNode
      */
-    protected $graph_node;
+    private $graph_node;
 
     /**
      * The access token associated with this request.
      *
-     * @var \Facebook\AccessToken|string|null
+     * @var \Facebook\Authentication\AccessToken|string|null
      */
-    protected $fqb_access_token;
+    private $fqb_access_token;
 
     /**
      * The etag associated with this node.
      *
      * @var string|null
      */
-    protected $fqb_etag;
+    private $fqb_etag;
 
     /**
      * Data that will be sent in the body of a POST request.
      *
      * @var array
      */
-    protected $post_data = [];
-
-    /**
-     * Remembers the last config sent to the constructor.
-     *
-     * @var array
-     */
-    protected $fqb_config = [];
+    private $post_data = [];
 
     /**
      * New up a new GraphNode instance.
      *
-     * @param array $config The configuration
+     * @param Facebook $fb The Facebook super service class.
+     * @param string|null $node The node we want to work with.
      */
-    public function __construct(array $config = [])
+    public function __construct(Facebook $fb, $node = null)
     {
-        if (isset($config['fqb:graph_node_name']))
-        {
-            $this->graph_node = new GraphNode($config['fqb:graph_node_name']);
-            unset($config['fqb:graph_node_name']);
+        $this->fb = $fb;
+
+        if (isset($node)) {
+            $this->graph_node = new GraphNode($node);
         }
-
-        $this->fqb_config = $config;
-
-        parent::__construct($config);
     }
 
     /**
      * Send GET request to Graph.
      * The arguments are there to keep notices from showing up in strict mode.
      *
-     * @param string $endpoint
-     * @param \Facebook\AccessToken|string|null $accessToken
-     * @param string|null $eTag
-     * @param string|null $graphVersion
-     *
      * @return \Facebook\FacebookResponse
      *
      * @throws \Facebook\Exceptions\FacebookSDKException
      */
-    public function get($endpoint = null, $accessToken = null, $eTag = null, $graphVersion = null)
+    public function get()
     {
         $url = $this->asUrl();
 
-        return parent::get($url, $this->fqb_access_token, $this->fqb_etag);
+        return $this->fb->get($url, $this->fqb_access_token, $this->fqb_etag);
     }
 
     /**
      * Send POST request to Graph.
      * The arguments are there to keep notices from showing up in strict mode.
      *
-     * @param string $endpoint
-     * @param array $params
-     * @param \Facebook\AccessToken|string|null $accessToken
-     * @param string|null $eTag
-     * @param string|null $graphVersion
-     *
      * @return \Facebook\FacebookResponse
      *
      * @throws \Facebook\Exceptions\FacebookSDKException
      */
-    public function post($endpoint = null, array $params = [], $accessToken = null, $eTag = null, $graphVersion = null)
+    public function post()
     {
         $url = $this->asUrl();
 
-        return parent::post($url, $this->post_data, $this->fqb_access_token, $this->fqb_etag);
+        return $this->fb->post($url, $this->post_data, $this->fqb_access_token, $this->fqb_etag);
     }
 
     /**
      * Send DELETE request to Graph.
      * The arguments are there to keep notices from showing up in strict mode.
      *
-     * @param string $endpoint
-     * @param \Facebook\AccessToken|string|null $accessToken
-     * @param string|null $eTag
-     * @param string|null $graphVersion
-     *
      * @return \Facebook\FacebookResponse
      *
      * @throws \Facebook\Exceptions\FacebookSDKException
      */
-    public function delete($endpoint = null, $accessToken = null, $eTag = null, $graphVersion = null)
+    public function delete()
     {
         $url = $this->asUrl();
 
-        return parent::delete($url, $this->fqb_access_token, $this->fqb_etag);
+        return $this->fb->delete($url, $this->fqb_access_token, $this->fqb_etag);
     }
 
     /**
@@ -127,7 +108,7 @@ class FQB extends Facebook
     {
         $url = $this->asUrl();
 
-        return parent::request('GET', $url, [], $this->fqb_access_token, $this->fqb_etag);
+        return $this->fb->request('GET', $url, [], $this->fqb_access_token, $this->fqb_etag);
     }
 
     /**
@@ -139,7 +120,7 @@ class FQB extends Facebook
     {
         $url = $this->asUrl();
 
-        return parent::request('POST', $url, $this->post_data, $this->fqb_access_token, $this->fqb_etag);
+        return $this->fb->request('POST', $url, $this->post_data, $this->fqb_access_token, $this->fqb_etag);
     }
 
     /**
@@ -151,26 +132,21 @@ class FQB extends Facebook
     {
         $url = $this->asUrl();
 
-        return parent::request('DELETE', $url, [], $this->fqb_access_token, $this->fqb_etag);
+        return $this->fb->request('DELETE', $url, [], $this->fqb_access_token, $this->fqb_etag);
     }
 
     /**
      * Sends a batched request to Graph and returns the result.
      *
      * @param array $requests
-     * @param \Facebook\AccessToken|string|null $accessToken
-     * @param string|null $graphVersion
      *
      * @return \Facebook\FacebookBatchResponse
      *
      * @throws \Facebook\Exceptions\FacebookSDKException
      */
-    public function sendBatchRequest(
-        array $requests,
-        $accessToken = null,
-        $graphVersion = null)
+    public function sendBatchRequest(array $requests)
     {
-        return parent::sendBatchRequest($requests, $this->fqb_access_token);
+        return $this->fb->sendBatchRequest($requests, $this->fqb_access_token);
     }
 
     /**
@@ -185,8 +161,7 @@ class FQB extends Facebook
     {
         $fqb = $this->node('search')->modifiers(['q' => $search]);
 
-        if ($type)
-        {
+        if ($type) {
             $fqb->modifiers(['type' => $type]);
         }
 
@@ -230,8 +205,7 @@ class FQB extends Facebook
      */
     public function fields($fields)
     {
-        if ( ! is_array($fields))
-        {
+        if (! is_array($fields)) {
             $fields = func_get_args();
         }
 
@@ -257,7 +231,7 @@ class FQB extends Facebook
     /**
      * Sets the access token.
      *
-     * @param \Facebook\AccessToken|string $access_token The access token to overwrite the default.
+     * @param \Facebook\Authentication\AccessToken|string $access_token The access token to overwrite the default.
      *
      * @return \SammyK\FacebookQueryBuilder\FQB
      */
@@ -285,8 +259,8 @@ class FQB extends Facebook
     /**
      * New up an Edge instance.
      *
-     * @param array $fields The fields we want on the edge
      * @param string $edge_name
+     * @param array $fields The fields we want on the edge
      *
      * @return \SammyK\FacebookQueryBuilder\GraphEdge
      */
@@ -304,9 +278,7 @@ class FQB extends Facebook
      */
     public function node($graph_node_name)
     {
-        $this->fqb_config['fqb:graph_node_name'] = $graph_node_name;
-
-        return new static($this->fqb_config);
+        return new static($this->fb, $graph_node_name);
     }
 
     /**

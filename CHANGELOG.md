@@ -4,7 +4,7 @@
 ## 2.0.0 - TBD
 
 - Upgraded Facebook PHP SDK dependency to latest v4.1.
-- FQB is now a decorator for the `Facebook\Facebook` super service.
+- FQB is now a decorator by injecting the `Facebook\Facebook` super service from the Facebook PHP SDK.
 - Renamed `Edge` to `GraphEdge`.
 - Renamed `RootEdge` to `GraphNode`.
 - `GraphEdge` is now a child of `GraphNode` instead of the other way around. I must have been drunk.

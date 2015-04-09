@@ -9,27 +9,38 @@ A query builder that makes it easy to send complex & efficient [nested requests]
 
 Facebook Query Builder runs on the latest [Facebook PHP SDK v4.1](https://github.com/facebook/facebook-php-sdk-v4).
 
-It's as easy as:
+Build complex nested requests...
+
+```
+@todo add example
+```
+
+...using PHP syntax.
 
 ```php
 // Get the user's ID & email
 $response = $fqb->node('me')->fields(['id', 'email'])->get();
+```
 
+It can also be used with `POST` and `DELETE` operations.
+
+```php
 // Post "Hello!" to a user's timeline
 $response = $fqb->node('me/feed')->with(['message' => 'Hello!'])->post();
+
+// Unlike your mom
+$response = $fqb->node('your-mom-id_like-id')->delete();
 ```
 
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [Usage](#usage)
     - [Obtaining An Access Token](#obtaining-an-access-token)
-    - [The AccessToken Object](#the-accesstoken-object)
     - [Setting The Access Token](#setting-the-access-token)
     - [Examples](#examples)
     - [Method Reference](#method-reference)
     - [Request Objects](#request-objects)
     - [Response Objects](#response-objects)
-- [Overwriting Persistent Storage](#overwriting-persistent-storage)
 - [Testing](#testing)
 - [Contributing](#contributing)
 - [CHANGELOG](#changelog)
@@ -83,175 +94,73 @@ Facebook Query Builder is installed using [Composer](https://getcomposer.org/). 
 
 ## Usage
 
-After [creating an app in Facebook](https://developers.facebook.com/apps), you'll need to provide the app ID and secret.
+Since `FQB` uses the [decorator pattern](http://sourcemaking.com/design_patterns/Decorator/php) to provide additional functionality to the native [Facebook PHP SDK v4.1](https://github.com/facebook/facebook-php-sdk-v4/tree/master). After [creating an app in Facebook](https://developers.facebook.com/apps), you'll need to create an instance of the `Facebook\Facebook` super service class from the native Facebook PHP SDK and inject it into `FQB`'s constructor.
 
 ```php
-use SammyK\FacebookQueryBuilder\FQB;
-
-$fqb = new FQB([
-    'app_id' => '{app-id}',
-    'app_secret' => '{app-secret}',
+$fb = new Facebook\Facebook([
+    'app_id' => 'your-app-id',
+    'app_secret' => 'you-app-secret',
+    'default_graph_version' => 'v2.2',
     ]);
-```
 
-Since `FQB` is just a decorator to the Facebook PHP SDK's `Facebook\Facebook` class, all the options available in the `Facebook\Facebook` class are also available in `FQB`.
-
-For example:
-
-```php
-$fqb = new FQB([
-    // . . .
-    'enable_beta_mode' => true,
-    'http_client_handler' => 'guzzle',
-    // . . .
-    ]);
+$fqb = new SammyK\FacebookQueryBuilder\FQB($fb);
 ```
 
 
 ## Obtaining An Access Token
 
-Most calls to Graph require an access token. There are three ways to obtain an access token.
+Most calls to Graph require an access token. You will need to obtain an access token using the functionality provided in the native Facebook PHP SDK.
 
-> **Note:** As of version 2.0 of the Facebook Query Builder, the `AccessToken` object was ported to the official Facebook PHP SDK v4.1. So you can just obtain an access token from the SDK methods.
+The documentation for obtaining an access token via the Facebook PHP SDK is very good. Consult the documentation for obtaining an access token:
+
+- [From a redirect (OAuth 2.0)](https://github.com/facebook/facebook-php-sdk-v4/blob/master/docs/FacebookRedirectLoginHelper.fbmd)
+- [From within an app canvas](https://github.com/facebook/facebook-php-sdk-v4/blob/master/docs/FacebookCanvasHelper.fbmd)
+- [From within a page tab](https://github.com/facebook/facebook-php-sdk-v4/blob/master/docs/FacebookPageTabHelper.fbmd)
+- [From the JavaScript SDK](https://github.com/facebook/facebook-php-sdk-v4/blob/master/docs/FacebookJavaScriptHelper.fbmd)
 
 
-### From A Redirect
+## The AccessToken Entity
 
-The most common way to obtain an access token is to provide a login URL and get the access token on the specified callback URL.
-
-```php
-use SammyK\FacebookQueryBuilder\FQB;
-use Facebook\Helpers\FacebookRedirectLoginHelper;
-
-$fqb = new FQB([
-  'app_id' => '{app-id}',
-  'app_secret' => '{app-secret}',
-  ]);
-$facebookApp = $fqb->getApp();
-
-$redirectHelper = new FacebookRedirectLoginHelper($facebookApp);
-
-$loginUrl = $redirectHelper->getLoginUrl('http://my-callback/url');
-```
-
-You can optionally send in an array of permissions to request.
+After you obtain an access token, you can set it as the default fall-back access token using the native Facebook PHP SDK and `FQB` will use that for every request made to the Graph API.
 
 ```php
-$scope = ['email', 'user_status'];
-$login_url = $redirectHelper->getLoginUrl('http://my-callback/url', $scope);
+$fb->setDefaultAccessToken('my-access-token');
+$response = $fqb->node('me')->get();
 ```
 
-Then in the callback URL you can obtain the access token.
+Alternatively you can use the `accessToken()` method in `FQB` to set an access to use for a specific request.
 
 ```php
-use SammyK\FacebookQueryBuilder\FQB;
-use Facebook\Helpers\FacebookRedirectLoginHelper;
-use Facebook\Exceptions\FacebookSDKException;
-
-$fqb = new FQB([
-  'app_id' => '{app-id}',
-  'app_secret' => '{app-secret}',
-  ]);
-$facebookApp = $fqb->getApp();
-$facebookClient = $fqb->getClient();
-
-$redirectHelper = new FacebookRedirectLoginHelper($facebookApp);
-
-try {
-  $accessToken = $redirectHelper->getAccessToken($facebookClient, 'http://my-callback/url');
-} catch (FacebookSDKException $e) {
-  // Failed to obtain access token
-  echo 'Error:' . $e->getMessage();
-}
+$response = $fqb->node('me')->accessToken('my-access-token')->get();
 ```
 
-See a full example of [obtaining an access token from redirect](https://github.com/SammyK/FacebookQueryBuilder/blob/master/examples/get_access_token_from_redirect.php).
-
-
-### From Within App Canvas
-
-If you are running your app from within the context of an app canvas, you can try to obtain an access token from the signed request that Facebook sends to your app.
-
-```php
-use SammyK\FacebookQueryBuilder\FQB;
-use Facebook\Helpers\FacebookCanvasHelper;
-use Facebook\Exceptions\FacebookSDKException;
-
-$fqb = new FQB([
-  'app_id' => '{app-id}',
-  'app_secret' => '{app-secret}',
-  ]);
-$facebookApp = $fqb->getApp();
-$facebookClient = $fqb->getClient();
-
-try {
-  $canvasHelper = new FacebookCanvasHelper($facebookApp);
-  $accessToken = $canvasHelper->getAccessToken($facebookClient);
-} catch(FacebookSDKException $e) {
-  echo 'Facebook SDK returned an error: ' . $e->getMessage();
-}
-
-if (isset($accessToken)) {
-  // Logged in.
-}
-```
-
-
-### From The Javascript SDK
-
-If you are using the Javascript SDK on your site, FQB can obtain an access token from the signed request that the Javascript SDK sets in the cookie.
-
-```php
-use SammyK\FacebookQueryBuilder\FQB;
-use Facebook\Helpers\FacebookJavaScriptHelper;
-use Facebook\Exceptions\FacebookSDKException;
-
-$fqb = new FQB([
-  'app_id' => '{app-id}',
-  'app_secret' => '{app-secret}',
-  ]);
-$facebookApp = $fqb->getApp();
-$facebookClient = $fqb->getClient();
-
-try {
-  $jsHelper = new FacebookJavaScriptHelper($facebookApp);
-  $accessToken = $jsHelper->getAccessToken($facebookClient);
-} catch(FacebookSDKException $e) {
-  echo 'Facebook SDK returned an error: ' . $e->getMessage();
-}
-
-if (isset($accessToken)) {
-  // Logged in.
-}
-```
-
-
-## The AccessToken Object
-
-By default access tokens will last for about 2 hours. You can exchange them for longer-lived tokens that last for about 60 days.
-
-As of version 2.0 of the Facebook Query Builder, the `AccessToken` object was ported to the official Facebook PHP SDK v4.1. Refer to the [official documentation](#) for full details.
+> **Note:** As of version 2.0 of the Facebook Query Builder, the `AccessToken` object was ported to the official Facebook PHP SDK v4.1. Refer to the [official documentation](https://github.com/facebook/facebook-php-sdk-v4/blob/master/docs/AccessToken.fbmd) for full details.
 
 
 ## Examples
 
 
-### Getting a single object from Graph
+### Get a user node
 
-Get the logged in user's profile.
-
-```php
-$user = $fqb->node('me')->fields('id','email')->get();
-```
-
-Get info from a Facebook page.
+A basic example that gets the logged in user's profile.
 
 ```php
-$page = $fqb->node('facebook_page_id')->fields('id','name','about')->get();
+$user_request = $fqb->node('me')->fields(['id', 'email']);
+
+try {
+    $response = $user_request->get();
+} catch(Facebook\Exceptions\FacebookSDKException $e) {
+    echo 'Facebook SDK returned an error: ' . $e->getMessage();
+    exit;
+}
+
+$user = $response->getGraphUser();
+
+// If you want to see what the request looked like:
+var_dump($user_request->asUrl());
 ```
 
-
-### Nested requests
+### Get data across multiple edges
 
 The bread and butter of the Facebook Query Builder is its support for [nested requests](https://developers.facebook.com/docs/graph-api/using-graph-api/v2.0#fieldexpansion). Nested requests allow you to get a lot of data from the Graph API with just one request.
 
@@ -259,19 +168,33 @@ The following example will get the logged in user's name & first 5 photos they a
 
 ```php
 $photos = $fqb->edge('photos')->fields('id', 'source')->limit(5);
-$user = $fqb->node('me')->fields('name', $photos)->get();
+$user = $fqb->node('me')->fields('name', $photos);
+
+try {
+    $response = $user->get();
+} catch(Facebook\Exceptions\FacebookSDKException $e) {
+    echo 'Facebook SDK returned an error: ' . $e->getMessage();
+    exit;
+}
 ```
 
 And edges can have other edges embedded in them to allow for infinite deepness. This allows you to do fairly complex calls to Graph while maintaining very readable code.
 
-The following example will get a user's name, and first 10 photos they are tagged in. For each photo get the first 2 comments and all the likes.
+The following example will get a user's name, and first 10 photos they are tagged in. For each photo it gets the first 2 comments and all the likes.
 
 ```php
 $likes = $fqb->edge('likes');
 $comments = $fqb->edge('comments')->fields('message')->limit(2);
 $photos = $fqb->edge('photos')->fields('id', 'source', $comments, $likes)->limit(10);
 
-$user = $fqb->node('user_id')->fields('name', $photos)->get();
+$user = $fqb->node('user_id')->fields('name', $photos);
+
+try {
+    $response = $user->get();
+} catch(Facebook\Exceptions\FacebookSDKException $e) {
+    echo 'Facebook SDK returned an error: ' . $e->getMessage();
+    exit;
+}
 ```
 
 
@@ -284,13 +207,42 @@ To get the examples to work you'll need to duplicate the `/examples/config.php.d
 
 ## Method Reference
 
+- [node()](#node)
+- [get()](#get)
+- [post()](#post)
+- [delete()](#delete)
+- [edge()](#edge)
+- [fields()](#fields)
+- [modifiers()](#modifiers)
+- [limit()](#limit)
+- [withPostData()](#withpostdata)
+- [search()](#search)
+- [etag()](#etag)
+- [accessToken()](#accesstoken)
+- [asUrl()](#asurl)
+- [asGetRequest()](#asgetrequest)
+- [asPostRequest()](#aspostrequest)
+- [asDeleteRequest()](#asdeleterequest)
+- [sendBatchRequest()](#sendbatchrequest)
 
-### node(*string* "graph_node")
 
-Returns a new instance of the `FQB` factory. Any valid Graph node can be passed to `node()`.
+### node()
 
+```php
+node(string $graph_node_name): FQB
+```
+
+Returns a new instance of the `FQB` entity. Any valid Graph node or endpoint on the Graph API can be passed to `node()`.
+
+```php
+$me_photos_node = $fqb->node('me/photos');
+```
 
 ### get()
+
+```php
+get(void): FacebookResponse
+```
 
 Performs a `GET` request to Graph and returns the response in the form of a collection. Will throw an `FacebookQueryBuilderException` if something went wrong while trying to communicate with Graph.
 
@@ -304,6 +256,10 @@ $test_users = $fqb->node('my_app_id/accounts/test-users')->get();
 
 
 ### post()
+
+```php
+post(void): FacebookResponse
+```
 
 Sends a `POST` request to Graph and returns the response in the form of a collection. Will throw an `FacebookQueryBuilderException` if something went wrong while trying to communicate with Graph.
 
@@ -334,6 +290,10 @@ $response = $fqb->node('status_update_id/comments')->with($comment)->post();
 
 ### delete()
 
+```php
+delete(void): FacebookResponse
+```
+
 Sends a `DELETE` request to Graph and returns the response in the form of a collection. Will throw an `FacebookQueryBuilderException` if something went wrong while trying to communicate with Graph.
 
 ```php
@@ -345,14 +305,22 @@ $response = $fqb->node('photo_id/likes')->delete();
 ```
 
 
-### edge(**string** "edge_name")
+### edge()
 
-Returns an `Edge` value object to be passed to the `fields()` method.
+```php
+node(string $edge_name): GraphEdge
+```
+
+Returns an `GraphEdge` value object to be passed to the `fields()` method.
 
 
-### fields(**array|string** "list of fields or edges")
+### fields()
 
-Set the fields and edges for this `Edge`. The fields and edges can be passed as an array or list of arguments.
+```php
+node(mixed $field_name_or_edge[, mixed $field_name_or_edge[, ...]]): FQB
+```
+
+Set the fields and edges for this `GraphEdge`. The fields and edges can be passed as an array or list of arguments.
 
 ```php
 $edge_one = $fqb->edge('my_edge')->fields('my_field', 'my_other_field');
@@ -362,20 +330,28 @@ $obj = $fqb->node('some_object')->fields('some_field', $edge_one, $edge_two)->ge
 ```
 
 
-### limit(**int** "number of results to return")
+### limit()
+
+```php
+node(int $number_of_results_to_return): FQB
+```
 
 Limit the number of results returned from Graph.
 
 ```php
-$edge = $fqb->edge('some_list_edge')->limit(7);
+$edge = $fqb->edge('some_edge')->limit(7);
 ```
 
 
-### with(**array** "data for body or request or modifiers")
+### withPostData()
+
+```php
+withPostData(array $data_to_post): FQB
+```
 
 The array should be an associative array. The key should be the name of the field as defined by Facebook.
 
-If used in conjunction with the `post()` or `delete()` methods, the data will be sent in the body of the request.
+If used in conjunction with the `post()` method, the data will be sent in the body of the request.
 
 ```php
 // Post a new comment to a photo
@@ -389,6 +365,15 @@ $comment_data = ['message' => 'My updated comment.'];
 $response = $fqb->node('comment_id')->with($comment_data)->post();
 ```
 
+
+### modifiers()
+
+```php
+modifiers(array $modifiers): FQB
+```
+
+Modifiers are @todo Talk about that here...
+
 If used in conjunction with a `get()` request, the data will be appended in the URL either in the sub edge or root edge.
 
 ```php
@@ -398,7 +383,11 @@ $page_info = $fqb->node('some_page_id')->fields('name', $profile_picture)->get()
 ```
 
 
-### search(**string** "search query"[, **string** "type of object to search"])
+### search()
+
+```php
+search(string $search_query[, string $type_of_search]): FQB
+```
 
 You can easily search Graph with the `search()` method.
 
@@ -468,21 +457,23 @@ The above example will output:
     /me?fields=email,photos.limit(5).fields(id,source)
 
 
-## Response Objects
+## Responses
 
-All responses from Graph are returned as a collection object that has many useful methods for playing with the response data.
+All responses from the `get()`, `post()`, and `delete()` methods return a `Facebook\FacebookResponse` from the native Facebook PHP SDK.
 
 ```php
-$user = $fqb->node('me')->fields('email', 'photos')->get();
+$response = $fqb->node('me')->fields('email', 'photos')->get();
+
+$user = $response->getGraphUser();
 
 // Access properties like an array
 $email = $user['email'];
 
 // Get data as array
-$user_array = $user->toArray();
+$user_array = $user->asArray();
 
 // Get data as JSON string
-$user_json = $user->toJson();
+$user_json = $user->asJson();
 
 // Iterate through the values
 foreach ($user['photos'] as $photo) {
@@ -495,72 +486,13 @@ $user['photos']->each(function ($value) {
 });
 ```
 
-Check out the [Collection class](https://github.com/SammyK/FacebookQueryBuilder/blob/master/src/Collection.php) for the full list of methods.
-
-
-### GraphObject
-
-The `GraphObject` collection represents any set of data Graph would consider a "node". This could be a user, page, photo, etc. When you request an object by ID from Graph, the response will be returned as a `GraphObject` collection.
-
-> **Note:** As of version 2.0 of the Facebook Query Builder, the `GraphObject` object was ported to the official Facebook PHP SDK v4.1.
-
-```php
-$my_graph_object = $fqb->node('object_id')->get();
-```
-
-`GraphObject`'s can also contain `GraphCollection`'s if you request an edge in the fields list.
-
-```php
-$my_graph_object = $fqb->node('object_id')->fields('id','likes')->get();
-
-$my_graph_collection = $my_graph_object['likes'];
-```
-
-
-### GraphCollection
-
-The `GraphCollection` collection is a collection of `GraphObject`'s.
-
-> **Note:** As of version 2.0 of the Facebook Query Builder, the `GraphCollection` object was ported to the official Facebook PHP SDK v4.1 as a `GraphList`.
-
-```php
-$my_graph_collection = $fqb->node('me/statuses')->get();
-```
-
-## Overwriting Persistent Storage
-
-If you try to use the `getLoginUrl()` or `getTokenFromRedirect()` and you're getting a `FacebookSDKException` with the following error:
-
-    Session not active, could not store state.
-
-Then you've fallen victim to the annoying persistent data storage issue that [hasn't been fixed yet](https://github.com/facebook/facebook-php-sdk-v4/pull/44). So you'll need to implement your own class that overwrites the persistent storage found in the `\Facebook\FacebookRedirectLoginHelper`.
-
-For example a Laravel implementation would look like the following.
-
-```php
-class LaravelFacebookRedirectLoginHelper extends \Facebook\FacebookRedirectLoginHelper
-{
-    protected function storeState($state)
-    {
-        Session::put('state', $state);
-    }
-
-    protected function loadState()
-    {
-        return $this->state = Session::get('state');
-    }
-}
-
-FQB::setRedirectHelperAlias('LaravelFacebookRedirectLoginHelper');
-```
-
 
 ## Testing
 
 Just run `phpunit` from the root directory of this project.
 
 ``` bash
-$ phpunit
+$ ./vendor/bin/phpunit
 ```
 
 
