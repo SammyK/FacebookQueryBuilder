@@ -394,6 +394,12 @@ You can specify the number of results the Graph API should return from an edge w
 $edge = $fqb->edge('some_edge')->limit(7);
 ```
 
+Since the "limit" functionality is just a [modifier](#modifiers) in the Graph API, the `limit()` method is a convenience method for sending the `limit` param to the `modifiers()` method. So the same functionality could be expressed as:
+
+```php
+$edge = $fqb->edge('some_edge')->modifiers(['limit' => 7]);
+```
+
 
 ### accessToken()
 

@@ -3,6 +3,34 @@
 class GraphNode
 {
     /**
+     * The name of the fields param
+     *
+     * @const string
+     */
+    const PARAM_FIELDS = 'fields';
+
+    /**
+     * The name of the limit param
+     *
+     * @const string
+     */
+    const PARAM_LIMIT = 'limit';
+
+    /**
+     * The name of the access token param
+     *
+     * @const string
+     */
+    const PARAM_ACCESS_TOKEN = 'access_token';
+
+    /**
+     * The name of the app secret proof param
+     *
+     * @const string
+     */
+    const PARAM_APP_SECRET_PROOF = 'appsecret_proof';
+
+    /**
      * The name of the node.
      *
      * @var string
@@ -28,21 +56,20 @@ class GraphNode
      *
      * @var array
      */
-    protected $compiled_values = [];
+    protected $compiledValues = [];
 
     /**
      * Create a new GraphNode value object.
      *
      * @param string $name
-     * @param array $fields
-     * @param int $limit
+     * @param array  $fields
+     * @param int    $limit
      */
     public function __construct($name, $fields = [], $limit = 0)
     {
         $this->name = $name;
         $this->fields($fields);
-        if ($limit)
-        {
+        if ($limit) {
             $this->limit($limit);
         }
     }
@@ -52,7 +79,7 @@ class GraphNode
      *
      * @param array $data
      *
-     * @return \SammyK\FacebookQueryBuilder\GraphNode
+     * @return GraphNode
      */
     public function modifiers(array $data)
     {
@@ -88,21 +115,23 @@ class GraphNode
      *
      * @param int $limit
      *
-     * @return \SammyK\FacebookQueryBuilder\GraphNode$this
+     * @return GraphNode
      */
     public function limit($limit)
     {
-        return $this->modifiers(['limit' => $limit]);
+        return $this->modifiers([
+          static::PARAM_LIMIT => $limit,
+        ]);
     }
 
     /**
      * Gets the limit for this node.
      *
-     * @return int
+     * @return int|null
      */
     public function getLimit()
     {
-        return $this->getModifier('limit');
+        return $this->getModifier(static::PARAM_LIMIT);
     }
 
     /**
@@ -110,12 +139,11 @@ class GraphNode
      *
      * @param mixed $fields
      *
-     * @return \SammyK\FacebookQueryBuilder\GraphNode
+     * @return GraphNode
      */
     public function fields($fields)
     {
-        if ( ! is_array($fields))
-        {
+        if (!is_array($fields)) {
             $fields = func_get_args();
         }
 
@@ -139,7 +167,7 @@ class GraphNode
      */
     public function resetCompiledValues()
     {
-        $this->compiled_values = [];
+        $this->compiledValues = [];
     }
 
     /**
@@ -147,9 +175,11 @@ class GraphNode
      */
     public function compileModifiers()
     {
-        if (count($this->modifiers) === 0) return;
+        if (count($this->modifiers) === 0) {
+            return;
+        }
 
-        $this->compiled_values[] = http_build_query($this->modifiers, '', '&');
+        $this->compiledValues[] = http_build_query($this->modifiers, '', '&');
     }
 
     /**
@@ -157,9 +187,11 @@ class GraphNode
      */
     public function compileFields()
     {
-        if (count($this->fields) === 0) return;
+        if (count($this->fields) === 0) {
+            return;
+        }
 
-        $this->compiled_values[] = 'fields=' . implode(',', $this->fields);
+        $this->compiledValues[] = static::PARAM_FIELDS.'='.implode(',', $this->fields);
     }
 
     /**
@@ -170,24 +202,31 @@ class GraphNode
     public function compileUrl()
     {
         $append = '';
-        if (count($this->compiled_values) > 0)
-        {
-            $append = '?' . implode('&', $this->compiled_values);
+        if (count($this->compiledValues) > 0) {
+            $append = '?'.implode('&', $this->compiledValues);
         }
-        return '/' . $this->name . $append;
+
+        return '/'.$this->name.$append;
     }
 
     /**
      * Compile the final URL as a string.
      *
+     * @param string|null $appSecret The app secret for signing the URL with app secret proof.
+     *
      * @return string
      */
-    public function asUrl()
+    public function asUrl($appSecret = null)
     {
         $this->resetCompiledValues();
 
+        if ($appSecret) {
+            $this->addAppSecretProofModifier($appSecret);
+        }
+
         $this->compileModifiers();
         $this->compileFields();
+
         return $this->compileUrl();
     }
 
@@ -199,5 +238,22 @@ class GraphNode
     public function __toString()
     {
         return $this->asUrl();
+    }
+
+    /**
+     * Generate an app secret proof modifier based on the app secret & access token.
+     *
+     * @param string $appSecret
+     */
+    private function addAppSecretProofModifier($appSecret)
+    {
+        $accessToken = $this->getModifier(static::PARAM_ACCESS_TOKEN);
+        if (!$accessToken) {
+            return;
+        }
+
+        $this->modifiers([
+          static::PARAM_APP_SECRET_PROOF => hash_hmac('sha256', $accessToken, $appSecret),
+        ]);
     }
 }

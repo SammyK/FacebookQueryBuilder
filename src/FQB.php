@@ -1,183 +1,154 @@
 <?php namespace SammyK\FacebookQueryBuilder;
 
-use Facebook\Facebook;
-
 class FQB
 {
     /**
-     * The Facebook PHP SDK v4.1 super service class.
+     * Production Graph API URL.
      *
-     * @var Facebook
+     * @const string
      */
-    private $fb;
+    const BASE_GRAPH_URL = 'https://graph.facebook.com';
+
+    /**
+     * Beta tier URL of the Graph API.
+     *
+     * @const string
+     */
+    const BASE_GRAPH_URL_BETA = 'https://graph.beta.facebook.com';
 
     /**
      * The GraphNode we are working with.
      *
-     * @var \SammyK\FacebookQueryBuilder\GraphNode
+     * @var GraphNode
      */
-    private $graph_node;
+    private $graphNode;
 
     /**
-     * The access token associated with this request.
-     *
-     * @var \Facebook\Authentication\AccessToken|string|null
-     */
-    private $fqb_access_token;
-
-    /**
-     * The etag associated with this node.
+     * The URL prefix version of the Graph API.
      *
      * @var string|null
      */
-    private $fqb_etag;
+    private $graphVersion;
 
     /**
-     * Data that will be sent in the body of a POST request.
+     * The application secret key.
+     *
+     * @var string|null
+     */
+    private $appSecret;
+
+    /**
+     * A toggle to enable the beta tier of the Graph API.
+     *
+     * @var boolean
+     */
+    private $enableBetaMode = false;
+
+    /**
+     * The config options sent in from the user.
      *
      * @var array
      */
-    private $post_data = [];
+    private $config = [];
 
     /**
-     * New up a new GraphNode instance.
-     *
-     * @param Facebook $fb The Facebook super service class.
-     * @param string|null $node The node we want to work with.
+     * @param array $config An array of config options.
+     * @param string|null $graphEndpoint The name of the Graph API endpoint.
      */
-    public function __construct(Facebook $fb, $node = null)
+    public function __construct(array $config = [], $graphEndpoint = '')
     {
-        $this->fb = $fb;
+        if (isset($graphEndpoint)) {
+            $this->graphNode = new GraphNode($graphEndpoint);
+        }
 
-        if (isset($node)) {
-            $this->graph_node = new GraphNode($node);
+        $this->config = $config;
+
+        if (isset($config['default_access_token'])) {
+            $this->accessToken($config['default_access_token']);
+        }
+
+        if (isset($config['default_graph_version'])) {
+            $this->graphVersion($config['default_graph_version']);
+        }
+
+        if (isset($config['app_secret'])) {
+            $this->appSecret = $config['app_secret'];
+        }
+
+        if (isset($config['enable_beta_mode']) && $config['enable_beta_mode'] === true) {
+            $this->enableBetaMode = true;
         }
     }
 
     /**
-     * Send GET request to Graph.
-     * The arguments are there to keep notices from showing up in strict mode.
+     * New up an instance of self.
      *
-     * @return \Facebook\FacebookResponse
+     * @param string $graph_node_name The node name
      *
-     * @throws \Facebook\Exceptions\FacebookSDKException
+     * @return FQB
      */
-    public function get()
+    public function node($graph_node_name)
     {
-        $url = $this->asUrl();
-
-        return $this->fb->get($url, $this->fqb_access_token, $this->fqb_etag);
+        return new static($this->config, $graph_node_name);
     }
 
     /**
-     * Send POST request to Graph.
-     * The arguments are there to keep notices from showing up in strict mode.
+     * New up an Edge instance.
      *
-     * @return \Facebook\FacebookResponse
+     * @param string $edgeName
+     * @param array  $fields The fields we want on the edge
      *
-     * @throws \Facebook\Exceptions\FacebookSDKException
+     * @return GraphEdge
      */
-    public function post()
+    public function edge($edgeName, array $fields = [])
     {
-        $url = $this->asUrl();
-
-        return $this->fb->post($url, $this->post_data, $this->fqb_access_token, $this->fqb_etag);
-    }
-
-    /**
-     * Send DELETE request to Graph.
-     * The arguments are there to keep notices from showing up in strict mode.
-     *
-     * @return \Facebook\FacebookResponse
-     *
-     * @throws \Facebook\Exceptions\FacebookSDKException
-     */
-    public function delete()
-    {
-        $url = $this->asUrl();
-
-        return $this->fb->delete($url, $this->fqb_access_token, $this->fqb_etag);
-    }
-
-    /**
-     * Make a FacebookRequest from a GET request.
-     *
-     * @return \Facebook\FacebookRequest
-     */
-    public function asGetRequest()
-    {
-        $url = $this->asUrl();
-
-        return $this->fb->request('GET', $url, [], $this->fqb_access_token, $this->fqb_etag);
-    }
-
-    /**
-     * Make a FacebookRequest from a POST request.
-     *
-     * @return \Facebook\FacebookRequest
-     */
-    public function asPostRequest()
-    {
-        $url = $this->asUrl();
-
-        return $this->fb->request('POST', $url, $this->post_data, $this->fqb_access_token, $this->fqb_etag);
-    }
-
-    /**
-     * Make a FacebookRequest from a DELETE request.
-     *
-     * @return \Facebook\FacebookRequest
-     */
-    public function asDeleteRequest()
-    {
-        $url = $this->asUrl();
-
-        return $this->fb->request('DELETE', $url, [], $this->fqb_access_token, $this->fqb_etag);
-    }
-
-    /**
-     * Sends a batched request to Graph and returns the result.
-     *
-     * @param array $requests
-     *
-     * @return \Facebook\FacebookBatchResponse
-     *
-     * @throws \Facebook\Exceptions\FacebookSDKException
-     */
-    public function sendBatchRequest(array $requests)
-    {
-        return $this->fb->sendBatchRequest($requests, $this->fqb_access_token);
-    }
-
-    /**
-     * Convenience method for searching Graph.
-     *
-     * @param string $search
-     * @param string $type
-     *
-     * @return \SammyK\FacebookQueryBuilder\FQB
-     */
-    public function search($search, $type = null)
-    {
-        $fqb = $this->node('search')->modifiers(['q' => $search]);
-
-        if ($type) {
-            $fqb->modifiers(['type' => $type]);
-        }
-
-        return $fqb;
+        return new GraphEdge($edgeName, $fields);
     }
 
     /**
      * Alias to method on GraphNode.
      *
-     * @param array $data
+     * @param array|string $fields
      *
-     * @return \SammyK\FacebookQueryBuilder\FQB
+     * @return FQB
      */
-    public function modifiers(array $data)
+    public function fields($fields)
     {
-        $this->graph_node->modifiers($data);
+        if (!is_array($fields)) {
+            $fields = func_get_args();
+        }
+
+        $this->graphNode->fields($fields);
+
+        return $this;
+    }
+
+    /**
+     * Sets the access token to use with this request.
+     *
+     * @param string $accessToken The access token to overwrite the default.
+     *
+     * @return FQB
+     */
+    public function accessToken($accessToken)
+    {
+        $this->graphNode->modifiers([
+          GraphNode::PARAM_ACCESS_TOKEN => $accessToken,
+        ]);
+
+        return $this;
+    }
+
+    /**
+     * Sets the graph version to use with this request.
+     *
+     * @param string $graphVersion The access token to overwrite the default.
+     *
+     * @return FQB
+     */
+    public function graphVersion($graphVersion)
+    {
+        $this->graphVersion = $graphVersion;
 
         return $this;
     }
@@ -187,11 +158,11 @@ class FQB
      *
      * @param int $limit
      *
-     * @return \SammyK\FacebookQueryBuilder\FQB
+     * @return FQB
      */
     public function limit($limit)
     {
-        $this->graph_node->limit($limit);
+        $this->graphNode->limit($limit);
 
         return $this;
     }
@@ -199,96 +170,40 @@ class FQB
     /**
      * Alias to method on GraphNode.
      *
-     * @param array|string $fields
-     *
-     * @return \SammyK\FacebookQueryBuilder\FQB
-     */
-    public function fields($fields)
-    {
-        if (! is_array($fields)) {
-            $fields = func_get_args();
-        }
-
-        $this->graph_node->fields($fields);
-
-        return $this;
-    }
-
-    /**
-     * Sets the etag.
-     *
-     * @param string $etag The eTag.
-     *
-     * @return \SammyK\FacebookQueryBuilder\FQB
-     */
-    public function etag($etag)
-    {
-        $this->fqb_etag = $etag;
-
-        return $this;
-    }
-
-    /**
-     * Sets the access token.
-     *
-     * @param \Facebook\Authentication\AccessToken|string $access_token The access token to overwrite the default.
-     *
-     * @return \SammyK\FacebookQueryBuilder\FQB
-     */
-    public function accessToken($access_token)
-    {
-        $this->fqb_access_token = $access_token;
-
-        return $this;
-    }
-
-    /**
-     * Sets an array of post data to send with the request.
-     *
      * @param array $data
      *
-     * @return \SammyK\FacebookQueryBuilder\FQB
+     * @return FQB
      */
-    public function withPostData(array $data)
+    public function modifiers(array $data)
     {
-        $this->post_data = array_merge($this->post_data, $data);
+        $this->graphNode->modifiers($data);
 
         return $this;
     }
 
     /**
-     * New up an Edge instance.
-     *
-     * @param string $edge_name
-     * @param array $fields The fields we want on the edge
-     *
-     * @return \SammyK\FacebookQueryBuilder\GraphEdge
-     */
-    public function edge($edge_name, array $fields = [])
-    {
-        return new GraphEdge($edge_name, $fields);
-    }
-
-    /**
-     * New up an instance of self.
-     *
-     * @param string $graph_node_name The node name
-     *
-     * @return \SammyK\FacebookQueryBuilder\FQB
-     */
-    public function node($graph_node_name)
-    {
-        return new static($this->fb, $graph_node_name);
-    }
-
-    /**
-     * Return the GraphNode as a URL string.
+     * Return the generated request as a URL with the hostname.
      *
      * @return string
      */
     public function asUrl()
     {
-        return $this->graph_node->asUrl();
+        return $this->getHostname().$this->asEndpoint();
+    }
+
+    /**
+     * Return the generated request as a URL endpoint sans the hostname.
+     *
+     * @return string
+     */
+    public function asEndpoint()
+    {
+        $graphVersionPrefix = '';
+        if ($this->graphVersion) {
+            $graphVersionPrefix = '/'.$this->graphVersion;
+        }
+
+        return $graphVersionPrefix.$this->graphNode->asUrl($this->appSecret);
     }
 
     /**
@@ -299,5 +214,19 @@ class FQB
     public function __toString()
     {
         return $this->asUrl();
+    }
+
+    /**
+     * Returns the Graph API hostname.
+     *
+     * @return string
+     */
+    private function getHostname()
+    {
+        if ($this->enableBetaMode === true) {
+            return static::BASE_GRAPH_URL_BETA;
+        }
+
+        return static::BASE_GRAPH_URL;
     }
 }

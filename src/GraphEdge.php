@@ -12,9 +12,8 @@ class GraphEdge extends GraphNode
         $endpoints = [];
 
         $children = $this->getChildEdges();
-        foreach ($children as $child)
-        {
-            $endpoints[] = '/' . implode('/', $child);
+        foreach ($children as $child) {
+            $endpoints[] = '/'.implode('/', $child);
         }
 
         return $endpoints;
@@ -27,26 +26,22 @@ class GraphEdge extends GraphNode
      */
     public function getChildEdges()
     {
-        $edges = [];
-        $has_children = false;
+        $edges        = [];
+        $hasChildren = false;
 
-        foreach ($this->fields as $v)
-        {
-            if ($v instanceof GraphEdge)
-            {
-                $has_children = true;
+        foreach ($this->fields as $v) {
+            if ($v instanceof GraphEdge) {
+                $hasChildren = true;
 
                 $children = $v->getChildEdges();
-                foreach ($children as $child_edges)
-                {
-                    $edges[] = array_merge([$this->name], $child_edges);
+                foreach ($children as $childEdges) {
+                    $edges[] = array_merge([$this->name], $childEdges);
                 }
             }
         }
 
         // Means this is the final node (no further sub edges)
-        if ( ! $has_children)
-        {
+        if (!$hasChildren) {
             $edges[] = [$this->name];
         }
 
@@ -58,16 +53,17 @@ class GraphEdge extends GraphNode
      */
     public function compileModifiers()
     {
-        if (count($this->modifiers) === 0) return;
+        if (count($this->modifiers) === 0) {
+            return;
+        }
 
         $processed_modifiers = [];
 
-        foreach ($this->modifiers as $k => $v)
-        {
-            $processed_modifiers[] = urlencode($k) . '(' . urlencode($v) . ')';
+        foreach ($this->modifiers as $k => $v) {
+            $processed_modifiers[] = urlencode($k).'('.urlencode($v).')';
         }
 
-        $this->compiled_values[] = '.' . implode('.', $processed_modifiers);
+        $this->compiledValues[] = '.'.implode('.', $processed_modifiers);
     }
 
     /**
@@ -75,16 +71,17 @@ class GraphEdge extends GraphNode
      */
     public function compileFields()
     {
-        if (count($this->fields) === 0) return;
+        if (count($this->fields) === 0) {
+            return;
+        }
 
         $processed_fields = [];
 
-        foreach ($this->fields as $v)
-        {
+        foreach ($this->fields as $v) {
             $processed_fields[] = $v instanceof GraphEdge ? $v->asUrl() : urlencode($v);
         }
 
-        $this->compiled_values[] = '{' . implode(',',$processed_fields) . '}';
+        $this->compiledValues[] = '{'.implode(',', $processed_fields).'}';
     }
 
     /**
@@ -95,10 +92,10 @@ class GraphEdge extends GraphNode
     public function compileUrl()
     {
         $append = '';
-        if (count($this->compiled_values) > 0)
-        {
-            $append = implode('', $this->compiled_values);
+        if (count($this->compiledValues) > 0) {
+            $append = implode('', $this->compiledValues);
         }
-        return $this->name . $append;
+
+        return $this->name.$append;
     }
 }

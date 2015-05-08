@@ -1,9 +1,9 @@
-<?php
+<?php namespace SammyK\FacebookQueryBuilderTests;
 
 use SammyK\FacebookQueryBuilder\GraphEdge;
 use SammyK\FacebookQueryBuilder\GraphNode;
 
-class GraphNodeTest extends PHPUnit_Framework_TestCase
+class GraphNodeTest extends \PHPUnit_Framework_TestCase
 {
     /** @test */
     public function the_node_can_instantiate_with_just_the_edge_name()
@@ -19,6 +19,42 @@ class GraphNodeTest extends PHPUnit_Framework_TestCase
         $node = new GraphNode('foo');
 
         $this->assertEquals('/foo', (string) $node);
+    }
+
+    /** @test */
+    public function the_limit_gets_set_properly()
+    {
+        $node = new GraphNode('foo');
+        $node->limit(5);
+
+        $this->assertEquals('/foo?limit=5', (string) $node);
+    }
+
+    /** @test */
+    public function the_fields_can_be_set_by_sending_an_array()
+    {
+        $node = new GraphNode('foo');
+        $node->fields(['bar', 'baz']);
+
+        $this->assertEquals(['bar', 'baz'], $node->getFields());
+    }
+
+    /** @test */
+    public function new_fields_will_get_merged_into_existing_fields()
+    {
+        $node = new GraphNode('foo', ['foo', 'bar']);
+        $node->fields('baz');
+
+        $this->assertEquals(['foo', 'bar', 'baz'], $node->getFields());
+    }
+
+    /** @test */
+    public function the_modifiers_can_be_set_by_sending_an_array()
+    {
+        $node = new GraphNode('foo');
+        $node->modifiers(['bar' => 'baz']);
+
+        $this->assertEquals(['bar' => 'baz'], $node->getModifiers());
     }
 
     /** @test */
@@ -57,8 +93,8 @@ class GraphNodeTest extends PHPUnit_Framework_TestCase
     /** @test */
     public function other_edges_can_be_embedded_in_the_node()
     {
-        $edge_to_embed = new GraphEdge('embeds', ['faz', 'boo'], 6);
-        $node = new GraphNode('root', ['bar', 'baz', $edge_to_embed], 3);
+        $edgeToEmbed = new GraphEdge('embeds', ['faz', 'boo'], 6);
+        $node = new GraphNode('root', ['bar', 'baz', $edgeToEmbed], 3);
 
         $this->assertEquals('/root?limit=3&fields=bar,baz,embeds.limit(6){faz,boo}', (string) $node);
     }

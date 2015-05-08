@@ -1,62 +1,9 @@
-<?php
+<?php namespace SammyK\FacebookQueryBuilderTests;
 
 use SammyK\FacebookQueryBuilder\GraphEdge;
 
-class GraphEdgeTest extends PHPUnit_Framework_TestCase
+class GraphEdgeTest extends \PHPUnit_Framework_TestCase
 {
-    /** @test */
-    public function the_edge_can_instantiate_with_just_the_edge_name()
-    {
-        $edge = new GraphEdge('foo');
-
-        $this->assertInstanceOf('SammyK\FacebookQueryBuilder\GraphEdge', $edge);
-    }
-
-    /** @test */
-    public function the_limit_gets_set_properly()
-    {
-        $edge = new GraphEdge('foo');
-        $edge->limit(5);
-
-        $this->assertEquals(5, $edge->getLimit());
-    }
-
-    /** @test */
-    public function the_fields_can_be_set_by_sending_an_array()
-    {
-        $edge = new GraphEdge('foo');
-        $edge->fields(['bar', 'baz']);
-
-        $this->assertEquals(['bar', 'baz'], $edge->getFields());
-    }
-
-    /** @test */
-    public function the_fields_can_be_set_from_constructor_arguments()
-    {
-        $edge = new GraphEdge('foo');
-        $edge->fields('bar', 'baz');
-
-        $this->assertEquals(['bar', 'baz'], $edge->getFields());
-    }
-
-    /** @test */
-    public function new_fields_will_get_merged_into_existing_fields()
-    {
-        $edge = new GraphEdge('foo', ['foo', 'bar']);
-        $edge->fields('baz');
-
-        $this->assertEquals(['foo', 'bar', 'baz'], $edge->getFields());
-    }
-
-    /** @test */
-    public function the_modifiers_can_be_set_by_sending_an_array()
-    {
-        $edge = new GraphEdge('foo');
-        $edge->modifiers(['bar' => 'baz']);
-
-        $this->assertEquals(['bar' => 'baz'], $edge->getModifiers());
-    }
-
     /** @test */
     public function modifiers_get_compiled_with_proper_syntax()
     {

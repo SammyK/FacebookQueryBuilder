@@ -1,10 +1,14 @@
 # CHANGELOG
 
 
-## 2.0.0 - TBD
+## 2.0.0 - May 8, 2015
 
-- Upgraded Facebook PHP SDK dependency to latest v4.1.
-- FQB is now a decorator by injecting the `Facebook\Facebook` super service from the Facebook PHP SDK.
+The upgrade to v2 is a complete pivot of the Facebook Query Builder. The `FQB` object is completely stripped down and only generates nested request syntax URL's and nothing else.
+
+If you're trying to upgrade from Facebook Query Builder v1 to v2, it might be better to [familiarize yourself with the new API](https://github.com/SammyK/FacebookQueryBuilder/tree/master#facebook-query-builder) and how it is used with a 3rd party HTTP client to make requests to the Graph API.
+
+- Removed all 3rd-party dependencies.
+- Removed all HTTP client related code.
 - Renamed `Edge` to `GraphEdge`.
 - Renamed `RootEdge` to `GraphNode`.
 - `GraphEdge` is now a child of `GraphNode` instead of the other way around. I must have been drunk.
@@ -15,7 +19,7 @@
     - `GraphCollection` (ported over as `GraphList`)
     - `GraphObject` (ported into existing `GraphObject`)
     - `Response` (ported into existing `FacebookResponse`)
-- Removed the supporting classes that are no longer needed after upgrading the SDK to v4.1:
+- Removed the supporting classes that were used to integrate into the Facebook PHP SDK v4.0
     - `ArrayHelpers`
     - `Auth`
     - `Connection`
@@ -24,17 +28,13 @@
     - `FacebookQueryBuilderException`
 - Removed `FQB::setAppCredentials()` in favor of setting the `app_id` and `app_secret` via the constructor.
 - Removed `FQB::setAccessToken()` in favor of setting the `default_access_token` via the constructor.
-- Removed `FQB::setFacebookSession()` since `FacebookSession` does not exist in v4.1 of the SDK.
-- Removed `FQB::auth()` since obtaining an access token is now done with v4.1 of the SDK directly.
-- Removed `FQB::getConnection()` & `FQB::setConnection()` since making requests to Graph in v4.1 of the SDK doesn't suck.
-- @TODO in 4.1: Removed `FQB::setRedirectHelperAlias()` in favor of setting the `persistent_state_handler` via constructor.
-- Renamed `FQB::with()` to `FQB::withPostData()` to disambiguate it from modifiers.
+- Removed `FQB::setFacebookSession()` since FQB doesn't authenticate anything anymore.
+- Removed `FQB::auth()` since FQB doesn't authenticate anything anymore.
+- Removed `FQB::getConnection()` & `FQB::setConnection()` since FQB is no longer dependant on the PHP SDK.
 - Added `FQB::modifiers()` and `GraphEdge::modifiers()` to replace what `FQB::with()` used to do so that the nomenclature makes more sense.
-- Added `FQB::etag()` to support eTags.
 - Added `FQB::accessToken()` to overwrite the `default_access_token`.
 - Renamed `GraphEdge::compileEdge()` and `GraphNode::compileEdge()` to `asUrl()`.
 - Renamed `FQB::getQueryUrl()` to `asUrl()`.
-- Added `FQB::asGetRequest()`, `FQB::asPostRequest()` and `FQB::asDeleteRequest()` to generate `\Facebook\Entities\FacebookRequest`'s for a batch request.
 - Fixed bug that put modifiers after the fields list that caused the following error from Graph: `Syntax error "Expected end of string instead of "."." at character n`
 
 

@@ -1,6 +1,6 @@
 {
     "name": "sammyk/facebook-query-builder",
-    "description": "An elegant and efficient way to interface with Facebook's Graph API",
+    "description": "An elegant and efficient way to generate nested requests for Facebook's Graph API.",
     "keywords": ["facebook", "sdk", "graph api"],
     "homepage": "https://github.com/SammyK/FacebookQueryBuilder",
     "license": "MIT",
@@ -13,16 +13,16 @@
         }
     ],
     "require": {
-        "php": ">=5.4.0",
-        "facebook/php-sdk-v4": "~4.1.0@dev"
+        "php": ">=5.4.0"
     },
     "require-dev": {
         "phpunit/phpunit": "~4.0",
-        "mockery/mockery": "~0.9"
+        "squizlabs/php_codesniffer": "~2.0"
     },
     "autoload": {
         "psr-4": {
-            "SammyK\\FacebookQueryBuilder\\": "src"
+            "SammyK\\FacebookQueryBuilder\\": "src",
+            "SammyK\\FacebookQueryBuilderTests\\": "tests"
         }
     },
     "extra": {
