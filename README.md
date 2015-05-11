@@ -14,7 +14,7 @@ $fqb = new SammyK\FacebookQueryBuilder\FQB;
 $request = $fqb->node('me')->fields(['id', 'email']);
 
 var_dump((string) $request);
-# https://graph.facebook.com/me?fields=id,email
+# string(45) "https://graph.facebook.com/me?fields=id,email"
 ```
 
 - [Introduction](#introduction)
@@ -43,7 +43,7 @@ The Facebook Query Builder uses the same [Graph API nomenclature](https://develo
 
 When you send a request to the Graph API, the URL is structured like so:
 
-    /node-id/edge-name?fields=field-name
+    https://graph.facebook.com/node-id/edge-name?fields=field-name
 
 To generate the same URL with Facebook Query Builder, you'd do the following:
 
@@ -54,7 +54,7 @@ echo $fqb->node('node-id')->fields($edge);
 
 If you were to execute that script, you might be surprised to see the URL looks a little different because it would output:
 
-    /node-id?fields=edge-name{field-name}
+    https://graph.facebook.com/node-id?fields=edge-name{field-name}
 
 The two URL's are functionally identical with the exception of how the Graph API returns the response data. What makes the URL generated with Facebook Query Builder different is that it is being expressed as a [nested request](https://developers.facebook.com/docs/graph-api/using-graph-api#fieldexpansion).
 
@@ -68,7 +68,7 @@ Facebook Query Builder is installed using [Composer](https://getcomposer.org/). 
 ```json
 {
     "require": {
-        "sammyk/facebook-query-builder": "~2.0@dev",
+        "sammyk/facebook-query-builder": "~2.0"
     }
 }
 ```
@@ -103,6 +103,7 @@ $request = $fqb->node('me')
 $response = file_get_contents((string) $request);
 
 var_dump($response);
+# string(50) "{"id":"12345678","email":"foo-bar\u0040gmail.com"}"
 ```
 
 
@@ -118,9 +119,11 @@ $fqb = new SammyK\FacebookQueryBuilder\FQB([/* . . . */]);
 $photosEdge = $fqb->edge('photos')->fields(['id', 'source'])->limit(5);
 $request = $fqb->node('me')->fields(['name', $photosEdge]);
 
+// Assumes you've set a default access token
 $response = file_get_contents((string) $request);
 
 var_dump($response);
+# string(1699) "{"name":"Sammy Kaye Powers","photos":{"data":[{"id":"123","source":"https:\/\/scontent.xx.fbcdn.net\/hphotos-xfp1 . . .
 ```
 
 And edges can have other edges embedded in them to allow for infinite deepness. This allows you to do fairly complex calls to Graph while maintaining very readable code.
@@ -138,9 +141,11 @@ $photosEdge = $fqb->edge('photos')
 
 $request = $fqb->node('1234')->fields(['name', $photosEdge]);
 
+// Assumes you've set a default access token
 $response = file_get_contents((string) $request);
 
 var_dump($response);
+# string(10780) "{"name":"Some Foo User","photos":{"data":[ . . .
 ```
 
 
@@ -158,26 +163,28 @@ The recommended way to send requests & receive responses is to use the official 
 ```php
 $fb = new Facebook\Facebook([
     'app_id' => 'your-app-id',
-    'app_secret' => 'you-app-secret',
+    'app_secret' => 'your-app-secret',
     'default_graph_version' => 'v2.3',
     ]);
-$fqb = new SammyK\FacebookQueryBuilder\FQB([/* . . . */]);
+$fqb = new SammyK\FacebookQueryBuilder\FQB;
+
+$fb->setDefaultAccessToken('my-access-token');
 
 $request = $fqb->node('me')->fields(['id', 'name', 'email']);
 
 try {
-    $response = $fb->get($request->asEndpoint(), 'foo_token');
+    $response = $fb->get($request->asEndpoint());
 } catch (Facebook\Exceptions\FacebookSDKException $e) {
     echo $e->getMessage();
     exit;
 }
 
-var_dump($response);
+var_dump($response->getDecodedBody());
 ```
 
 You'll noticed we're using the [`asEndpoint()` method](#asendpoint) to send the generated request to the SDK. That's because the SDK will automatically prefix the URL with the Graph API hostname. The `asEndpoint()` method will return an un-prefixed version of the URL.
 
-Since the official Facebook PHP SDK automatically prefixes the requests with the specified Graph API version, appends the app secret proof, & appends the access token for you, you don't have to worry about setting those options on the `FQB` object.
+The official Facebook PHP SDK will automatically add the Graph API version, the app secret proof, and the access token to the URL for you, so you don't have to worry about setting those options on the `FQB` object.
 
 
 ### Requests with native PHP
@@ -187,22 +194,25 @@ As you've already seen in the basic examples above, you can simply use PHP's fle
 ```php
 $fqb = new SammyK\FacebookQueryBuilder\FQB([
     'default_graph_version' => 'v2.3',
-    'app_secret'            => 'my-app-secret',
+    'app_secret'            => 'your-app-secret',
 ]);
 
-$request = $fqb->node('1234')->accessToken('my-access-token');
+// Grab Mark Zuckerberg's public info
+$request = $fqb->node('4')->accessToken('my-access-token');
 
 $response = file_get_contents((string) $request);
 
 var_dump($response);
 ```
 
+For more info about handling the response, check out [responses with native PHP](#responses-with-native-php) below.
+
 
 ## Obtaining an access token
 
 As the Facebook Query Builder is exclusive to building nested request syntax, it cannot be used directly to obtain an access token.
 
-The Facebook login process uses OAuth 2.0 behind the scenes. So you can use any OAuth 2.0 client library to obtain a user access token from Facebook. Here are a few recommendations:
+The Facebook login process uses [OAuth 2.0](http://oauth.net/2/) behind the scenes. So you can use any OAuth 2.0 client library to obtain a user access token from Facebook. Here are a few recommendations:
 
 - The official [Facebook PHP SDK v5](https://github.com/facebook/facebook-php-sdk-v4/tree/master) **(recommended)**
 - The PHP League's [OAuth 2.0 Client](https://github.com/thephpleague/oauth2-client) and the corresponding [Facebook Provider](https://github.com/thephpleague/oauth2-facebook)
@@ -219,9 +229,9 @@ A number of configuration settings can be set via the `FQB` constructor.
 
 ```php
 $fqb = new SammyK\FacebookQueryBuilder\FQB([
-    'default_access_token'  => 'my-access-token',
+    'default_access_token'  => 'your-access-token',
     'default_graph_version' => 'v2.3',
-    'app_secret'            => 'my-app-secret',
+    'app_secret'            => 'your-app-secret',
 ]);
 ```
 
@@ -238,11 +248,11 @@ $fqb = new SammyK\FacebookQueryBuilder\FQB([
 ]);
 
 $request = $fqb->node('me');
-echo $request->asUrl();
+echo $request->asEndpoint();
 # /me?access_token=fallback_access_token
 
 $request = $fqb->node('me')->accessToken('bar_token');
-echo $request->asUrl();
+echo $request->asEndpoint();
 # /me?access_token=bar_token
 ```
 
@@ -261,18 +271,20 @@ $fqb = new SammyK\FacebookQueryBuilder\FQB([
 ]);
 
 $request = $fqb->node('me');
-echo $request->asUrl();
+echo $request->asEndpoint();
 # /v2.3/me
 
 $request = $fqb->node('me')->graphVersion('v1.0');
-echo $request->asUrl();
+echo $request->asEndpoint();
 # /v1.0/me
 ```
+
+PS: [Graph v1.0 is dead](https://developers.facebook.com/docs/apps/api-v1-deprecation). :skull:
 
 
 ### Enabling app secret proof
 
-As an added security feature, you can [sign reach request to the Graph API with an `app_secretproof`](https://developers.facebook.com/docs/graph-api/securing-requests). It is highly recommended that you [edit your app settings to require the app secret proof](https://developers.facebook.com/docs/graph-api/securing-requests#require-proof) for all requests.
+As an added security feature, you can [sign each request to the Graph API with an `app_secretproof`](https://developers.facebook.com/docs/graph-api/securing-requests). It is highly recommended that you [edit your app settings to require the app secret proof](https://developers.facebook.com/docs/graph-api/securing-requests#require-proof) for all requests.
 
 If you're using the Facebook PHP SDK to send requests to the Graph API, it will automatically append the app secret proof for you.
 
@@ -284,8 +296,8 @@ $fqb = new SammyK\FacebookQueryBuilder\FQB([
 ]);
 
 $request = $fqb->node('me')->accessToken('bar_token');
-echo $request->asUrl();
-# /me?access_token=bar_token&app_secretproof=abcdef0123
+echo $request->asEndpoint();
+# /me?access_token=bar_token&appsecret_proof=2ceec40b7b9fd7d38fff1767b766bcc6b1f9feb378febac4612c156e6a8354bd
 ```
 
 
@@ -293,22 +305,22 @@ echo $request->asUrl();
 
 Before changes to the Graph API are rolled out to production, they are deployed to the [beta tier](https://developers.facebook.com/docs/apps/beta-tier) first.
 
-By default, when you generate a nested request, it will be prefixed with the production hostname for the Graph API.
+By default, when you generate a nested request, it will be prefixed with the production hostname for the Graph API which is [https://graph.facebook.com/](https://graph.facebook.com/).
 
 ```php
-echo (string) $fqb->node('1337');
-# https://graph.facebook.com/1337
+echo (string) $fqb->node('4');
+# https://graph.facebook.com/4
 ```
 
-To enable the beta tier for the requests generated by `FQB`, set the `enable_beta_mode` option to `true`. Once enabled, all generated URL's will be prefixed with the beta hostname of the Graph API.
+To enable the beta tier for the requests generated by `FQB`, set the `enable_beta_mode` option to `true`. Once enabled, all generated URL's will be prefixed with the beta hostname of the Graph API which is [https://graph.beta.facebook.com/](https://graph.beta.facebook.com/).
 
 ```php
 $fqb = new SammyK\FacebookQueryBuilder\FQB([
     'enable_beta_mode' => true,
 ]);
 
-echo (string) $fqb->node('1337');
-# https://graph.beta.facebook.com/1337
+echo (string) $fqb->node('4');
+# https://graph.beta.facebook.com/4
 ```
 
 
@@ -360,8 +372,8 @@ fields(mixed $fieldNameOrEdge[, mixed $fieldNameOrEdge[, ...]]): FQB
 Set the fields and edges for a `GraphNode` or `GraphEdge` entity. The fields and edges can be passed as an array or list of arguments.
 
 ```php
-$node = $fqb->node('some_node')->fields('my_field', 'my_other_field');
 $edge = $fqb->edge('some_edge')->fields(['field_one', 'field_two']);
+$node = $fqb->node('some_node')->fields('my_field', 'my_other_field', $edge);
 ```
 
 
@@ -377,8 +389,8 @@ An example endpoint that supports modifiers is the [`/{object-id}/comments` edge
 
 ```php
 // Order the comments in chronological order
-$commentsEdge = $fqb->edge('comments')->modifiers(['order' => 'chronological']);
-$request = $fqb->node('{object-id}')->fields('name', $commentsEdge);
+$commentsEdge = $fqb->edge('comments')->modifiers(['filter' => 'stream']);
+$request = $fqb->node('1044180305609983')->fields('name', $commentsEdge);
 ```
 
 
@@ -391,13 +403,13 @@ limit(int $numberOfResultsToReturn): FQB
 You can specify the number of results the Graph API should return from an edge with the `limit()` method.
 
 ```php
-$edge = $fqb->edge('some_edge')->limit(7);
+$edge = $fqb->edge('photos')->limit(7);
 ```
 
 Since the "limit" functionality is just a [modifier](#modifiers) in the Graph API, the `limit()` method is a convenience method for sending the `limit` param to the `modifiers()` method. So the same functionality could be expressed as:
 
 ```php
-$edge = $fqb->edge('some_edge')->modifiers(['limit' => 7]);
+$edge = $fqb->edge('photos')->modifiers(['limit' => 7]);
 ```
 
 
@@ -410,10 +422,10 @@ accessToken(string $accessToken): FQB
 You can set the access token for a specific request with the `accessToken()` method.
 
 ```php
-$request = $fqb->node('me')->accessToken('foo-token');
+$request = $fqb->node('BradfordWhelanPhotography')->accessToken('foo-token');
 
 echo $request->asEndpoint();
-# /me?access_token=foo-token
+# /BradfordWhelanPhotography?access_token=foo-token
 ```
 
 
@@ -439,7 +451,7 @@ echo $request->asEndpoint();
 asUrl(): string
 ```
 
-You can obtain the generated request as a string using the `asUrl()` method.
+You can obtain the generated request as a full URL using the `asUrl()` method.
 
 ```php
 $request = $fqb->node('me');
@@ -473,6 +485,8 @@ echo $request->asEndpoint();
 # /me
 ```
 
+This is particularly handy for working with the official Facebook PHP SDK which will automatically prefix the Graph hostname to the URL for you.
+
 
 ## Handling the response
 
@@ -487,10 +501,12 @@ All responses from the `get()`, `post()`, and `delete()` methods return a `Faceb
 $fb = new Facebook\Facebook([/* . . . */]);
 $fqb = new SammyK\FacebookQueryBuilder\FQB([/* . . . */]);
 
+$fb->setDefaultAccessToken('my-access-token');
+
 $request = $fqb->node('me')->fields(['email', 'photos']);
 
 try {
-    $response = $fb->get($request->asEndpoint(), 'foo_token');
+    $response = $fb->get($request->asEndpoint());
 } catch (Facebook\Exceptions\FacebookSDKException $e) {
     echo $e->getMessage();
     exit;
@@ -518,6 +534,8 @@ $userNode['photos']->each(function ($value) {
 });
 ```
 
+See the official documentation for more information on the [`FacebookResponse` entity](https://github.com/facebook/facebook-php-sdk-v4/blob/master/docs/FacebookResponse.fbmd).
+
 
 ### Responses with native PHP
 
@@ -526,9 +544,31 @@ If you're using `file_get_contents()` to send requests to the Graph API, the res
 ```php
 $fqb = new SammyK\FacebookQueryBuilder\FQB([/* . . . */]);
 
-$request = $fqb->node('1234')->accessToken('my-access-token');
+$request = $fqb->node('4')
+               ->fields(['id', 'name'])
+               ->accessToken('user-access-token');
 
 $response = file_get_contents((string) $request);
+
+$data = json_decode($response, true);
+
+var_dump($data);
+# array(2) { ["id"]=> string(1) "4" ["name"]=> string(15) "Mark Zuckerberg" }
+```
+
+If there was an error response from the Graph API, `file_get_contents()` will return `false`. You can obtain the response headers by examining the `$http_response_header` variable which gets set automatically by `file_get_contents()` to figure out what went wrong.
+
+```php
+$fqb = new SammyK\FacebookQueryBuilder\FQB([/* . . . */]);
+
+$request = $fqb->node('Some-Invalid-Node')->accessToken('user-access-token');
+
+$response = file_get_contents((string) $request);
+
+if ($response === false) {
+    var_dump($http_response_header);
+    exit;
+}
 
 $data = json_decode($response, true);
 

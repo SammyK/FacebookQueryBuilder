@@ -9,7 +9,7 @@
             "name": "Sammy Kaye Powers",
             "email": "sammyk@sammykmedia.com",
             "homepage": "http://www.sammyk.me",
-            "role": "Developer"
+            "role": "A PHP nerd who likes to dance"
         }
     ],
     "require": {
@@ -23,11 +23,6 @@
         "psr-4": {
             "SammyK\\FacebookQueryBuilder\\": "src",
             "SammyK\\FacebookQueryBuilderTests\\": "tests"
-        }
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "2.0.x-dev"
         }
     }
 }
