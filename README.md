@@ -1,7 +1,8 @@
 # Facebook Query Builder
 
 [![Build Status](http://img.shields.io/travis/SammyK/FacebookQueryBuilder/master.svg)](https://travis-ci.org/SammyK/FacebookQueryBuilder)
-[![Latest Stable Version](http://img.shields.io/badge/Development%20Version-2.0.0-orange.svg)](https://packagist.org/packages/sammyk/facebook-query-builder)
+[![Latest Stable Version](http://img.shields.io/badge/Latest%20Stable-2.0.0-blue.svg)](https://packagist.org/packages/sammyk/facebook-query-builder)
+[![Total Downloads](https://img.shields.io/packagist/dt/sammyk/facebook-query-builder.svg)](https://packagist.org/packages/sammyk/facebook-query-builder)
 [![License](http://img.shields.io/badge/license-MIT-lightgrey.svg)](https://github.com/SammyK/FacebookQueryBuilder/blob/master/LICENSE)
 
 
