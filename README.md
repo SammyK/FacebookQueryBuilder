@@ -11,10 +11,12 @@ Facebook Query Builder has no production dependencies.
 
 ```php
 $fqb = new SammyK\FacebookQueryBuilder\FQB;
-$request = $fqb->node('me')->fields(['id', 'email']);
 
-var_dump((string) $request);
-# string(45) "https://graph.facebook.com/me?fields=id,email"
+$photosEdge = $fqb->edge('photos')->fields(['id', 'source'])->limit(5);
+$request = $fqb->node('me')->fields(['id', 'email', $photosEdge]);
+
+echo (string) $request;
+# https://graph.facebook.com/me?fields=id,email,photos.limit(5){id,source}
 ```
 
 - [Introduction](#introduction)
