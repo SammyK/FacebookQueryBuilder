@@ -103,6 +103,9 @@ $request = $fqb->node('me')
                ->accessToken('user-access-token')
                ->graphVersion('v2.5');
 
+echo $request;
+# https://graph.facebook.com/v2.5/me?access_token=user-access-token&fields=id,email
+
 $response = file_get_contents((string) $request);
 
 var_dump($response);
@@ -121,6 +124,9 @@ $fqb = new SammyK\FacebookQueryBuilder\FQB([/* . . . */]);
 
 $photosEdge = $fqb->edge('photos')->fields(['id', 'source'])->limit(5);
 $request = $fqb->node('me')->fields(['name', $photosEdge]);
+
+echo $request;
+# https://graph.facebook.com/me?fields=name,photos.limit(5){id,source}
 
 // Assumes you've set a default access token
 $response = file_get_contents((string) $request);
@@ -144,6 +150,9 @@ $photosEdge = $fqb->edge('photos')
 
 $request = $fqb->node('1234')->fields(['name', $photosEdge]);
 
+echo $request;
+# https://graph.facebook.com/1234?fields=name,photos.limit(10){id,source,comments.limit(2){message},likes}
+
 // Assumes you've set a default access token
 $response = file_get_contents((string) $request);
 
@@ -161,7 +170,7 @@ We'll assume you've already [created an app in Facebook](https://developers.face
 
 ### Requests with The Facebook PHP SDK
 
-The recommended way to send requests & receive responses is to use the official [Facebook PHP SDK v5](https://github.com/facebook/facebook-php-sdk-v4/tree/master). You'll need to create an instance of the `Facebook\Facebook` super service class from the native Facebook PHP SDK.
+The recommended way to send requests & receive responses is to use the official [Facebook PHP SDK v5](https://developers.facebook.com/docs/reference/php/5.0.0). You'll need to create an instance of the `Facebook\Facebook` super service class from the native Facebook PHP SDK.
 
 ```php
 $fb = new Facebook\Facebook([
@@ -174,6 +183,9 @@ $fqb = new SammyK\FacebookQueryBuilder\FQB;
 $fb->setDefaultAccessToken('my-access-token');
 
 $request = $fqb->node('me')->fields(['id', 'name', 'email']);
+
+echo $request->asEndpoint();
+# /me?fields=id,name,email
 
 try {
     $response = $fb->get($request->asEndpoint());
@@ -203,6 +215,9 @@ $fqb = new SammyK\FacebookQueryBuilder\FQB([
 // Grab Mark Zuckerberg's public info
 $request = $fqb->node('4')->accessToken('my-access-token');
 
+echo $request;
+# https://graph.facebook.com/v2.5/4?access_token=my-access-token&appsecret_proof=2ad43b865030f51531ac36bb00ce4f59d9f879ecce31b0977dbfd73fa4eca7b6
+
 $response = file_get_contents((string) $request);
 
 var_dump($response);
@@ -217,7 +232,7 @@ As the Facebook Query Builder is exclusive to building nested request syntax, it
 
 The Facebook login process uses [OAuth 2.0](http://oauth.net/2/) behind the scenes. So you can use any OAuth 2.0 client library to obtain a user access token from Facebook. Here are a few recommendations:
 
-- The official [Facebook PHP SDK v5](https://github.com/facebook/facebook-php-sdk-v4/tree/master) **(recommended)**
+- The official [Facebook PHP SDK v5](https://developers.facebook.com/docs/reference/php/5.0.0) **(recommended)**
 - The PHP League's [OAuth 2.0 Client](https://github.com/thephpleague/oauth2-client) and the corresponding [Facebook Provider](https://github.com/thephpleague/oauth2-facebook)
 - Laravel 5's [Socialite](http://laravel.com/docs/5.0/authentication#social-authentication) library
 
@@ -508,6 +523,9 @@ $fb->setDefaultAccessToken('my-access-token');
 
 $request = $fqb->node('me')->fields(['email', 'photos']);
 
+echo $request->asEndpoint();
+# /me?fields=email,photos
+
 try {
     $response = $fb->get($request->asEndpoint());
 } catch (Facebook\Exceptions\FacebookSDKException $e) {
@@ -537,7 +555,7 @@ $userNode['photos']->each(function ($value) {
 });
 ```
 
-See the official documentation for more information on the [`FacebookResponse` entity](https://github.com/facebook/facebook-php-sdk-v4/blob/master/docs/FacebookResponse.fbmd).
+See the official documentation for more information on the [`FacebookResponse` entity](https://developers.facebook.com/docs/php/FacebookResponse/5.0.0).
 
 
 ### Responses with native PHP
@@ -551,6 +569,9 @@ $request = $fqb->node('4')
                ->fields(['id', 'name'])
                ->accessToken('user-access-token');
 
+echo $request;
+# https://graph.facebook.com/4?access_token=user-access-token&fields=id,name
+
 $response = file_get_contents((string) $request);
 
 $data = json_decode($response, true);
@@ -559,23 +580,74 @@ var_dump($data);
 # array(2) { ["id"]=> string(1) "4" ["name"]=> string(15) "Mark Zuckerberg" }
 ```
 
-If there was an error response from the Graph API, `file_get_contents()` will return `false`. You can obtain the response headers by examining the `$http_response_header` variable which gets set automatically by `file_get_contents()` to figure out what went wrong.
+If there was an error response from the Graph API, `file_get_contents()` will return `false` and raise a warning. This can be problematic since the Graph API returns error details in the body of the response.
+
+To get the error response data we need to tell `file_get_contents()` to return the response body even when the response contains an error HTTP status code. We can do this by setting `ignore_errors` to `true` with the [`stream_context_create()` function](http://php.net/stream_context_create).
+
+You can also investigate the error response further by examining the response headers. The headers are stored in the `$http_response_header` variable which gets set automatically by `file_get_contents()`.
 
 ```php
 $fqb = new SammyK\FacebookQueryBuilder\FQB([/* . . . */]);
 
 $request = $fqb->node('Some-Invalid-Node')->accessToken('user-access-token');
 
-$response = file_get_contents((string) $request);
+echo $request;
+# https://graph.facebook.com/Some-Invalid-Node?access_token=user-access-token
 
-if ($response === false) {
-    var_dump($http_response_header);
-    exit;
-}
+$context = stream_context_create(['http' => ['ignore_errors' => true]]);
+$response = file_get_contents((string) $request, null, $context);
 
 $data = json_decode($response, true);
-
 var_dump($data);
+/*
+array(1) {
+  ["error"]=>
+  array(4) {
+    ["message"]=>
+    string(27) "Invalid OAuth access token."
+    ["type"]=>
+    string(14) "OAuthException"
+    ["code"]=>
+    int(190)
+    ["fbtrace_id"]=>
+    string(11) "A8oB9BtqtZ4"
+  }
+}
+*/
+
+var_dump($http_response_header);
+/*
+array(14) {
+  [0]=>
+  string(24) "HTTP/1.1 400 Bad Request"
+  [1]=>
+  string(89) "WWW-Authenticate: OAuth "Facebook Platform" "invalid_token" "Invalid OAuth access token.""
+  [2]=>
+  string(30) "Access-Control-Allow-Origin: *"
+  [3]=>
+  string(44) "Content-Type: text/javascript; charset=UTF-8"
+  [4]=>
+  string(26) "X-FB-Trace-ID: h8oB7BtrtZ3"
+  [5]=>
+  string(17) "X-FB-Rev: 4971439"
+  [6]=>
+  string(16) "Pragma: no-cache"
+  [7]=>
+  string(23) "Cache-Control: no-store"
+  [8]=>
+  string(38) "Expires: Sat, 01 Jan 2000 00:00:00 GMT"
+  [9]=>
+  string(21) "Vary: Accept-Encoding"
+  [10]=>
+  string(100) "X-FB-Debug: FOOE54KJadh9P2HOSUlSFQmNEEf/9CF4ZtgZQ=="
+  [11]=>
+  string(35) "Date: Fri, 09 Oct 2015 04:43:44 GMT"
+  [12]=>
+  string(17) "Connection: close"
+  [13]=>
+  string(19) "Content-Length: 113"
+}
+*/
 ```
 
 
