@@ -71,7 +71,7 @@ Facebook Query Builder is installed using [Composer](https://getcomposer.org/). 
 ```json
 {
     "require": {
-        "sammyk/facebook-query-builder": "~2.0"
+        "sammyk/facebook-query-builder": "^2.0"
     }
 }
 ```
