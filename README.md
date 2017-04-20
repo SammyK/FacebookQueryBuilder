@@ -101,10 +101,10 @@ $fqb = new SammyK\FacebookQueryBuilder\FQB;
 $request = $fqb->node('me')
                ->fields(['id', 'email'])
                ->accessToken('user-access-token')
-               ->graphVersion('v2.8');
+               ->graphVersion('v2.9');
 
 echo $request;
-# https://graph.facebook.com/v2.8/me?access_token=user-access-token&fields=id,email
+# https://graph.facebook.com/v2.9/me?access_token=user-access-token&fields=id,email
 
 $response = file_get_contents((string) $request);
 
@@ -176,7 +176,7 @@ The recommended way to send requests & receive responses is to use the official 
 $fb = new Facebook\Facebook([
     'app_id' => 'your-app-id',
     'app_secret' => 'your-app-secret',
-    'default_graph_version' => 'v2.8',
+    'default_graph_version' => 'v2.9',
     ]);
 $fqb = new SammyK\FacebookQueryBuilder\FQB;
 
@@ -208,7 +208,7 @@ As you've already seen in the basic examples above, you can simply use PHP's fle
 
 ```php
 $fqb = new SammyK\FacebookQueryBuilder\FQB([
-    'default_graph_version' => 'v2.8',
+    'default_graph_version' => 'v2.9',
     'app_secret'            => 'your-app-secret',
 ]);
 
@@ -216,7 +216,7 @@ $fqb = new SammyK\FacebookQueryBuilder\FQB([
 $request = $fqb->node('4')->accessToken('my-access-token');
 
 echo $request;
-# https://graph.facebook.com/v2.8/4?access_token=my-access-token&appsecret_proof=2ad43b865030f51531ac36bb00ce4f59d9f879ecce31b0977dbfd73fa4eca7b6
+# https://graph.facebook.com/v2.9/4?access_token=my-access-token&appsecret_proof=2ad43b865030f51531ac36bb00ce4f59d9f879ecce31b0977dbfd73fa4eca7b6
 
 $response = file_get_contents((string) $request);
 
@@ -248,7 +248,7 @@ A number of configuration settings can be set via the `FQB` constructor.
 ```php
 $fqb = new SammyK\FacebookQueryBuilder\FQB([
     'default_access_token'  => 'your-access-token',
-    'default_graph_version' => 'v2.8',
+    'default_graph_version' => 'v2.9',
     'app_secret'            => 'your-app-secret',
 ]);
 ```
@@ -285,12 +285,12 @@ If you're using some other HTTP client, you can set the default fallback Graph v
 
 ```php
 $fqb = new SammyK\FacebookQueryBuilder\FQB([
-    'default_graph_version' => 'v2.8',
+    'default_graph_version' => 'v2.9',
 ]);
 
 $request = $fqb->node('me');
 echo $request->asEndpoint();
-# /v2.8/me
+# /v2.9/me
 
 $request = $fqb->node('me')->graphVersion('v1.0');
 echo $request->asEndpoint();
@@ -403,7 +403,7 @@ modifiers(array $modifiers): FQB
 
 Some endpoints of the Graph API support additional parameters called "modifiers".
 
-An example endpoint that supports modifiers is the [`/{object-id}/comments` edge](https://developers.facebook.com/docs/graph-api/reference/v2.8/object/comments#readmodifiers).
+An example endpoint that supports modifiers is the [`/{object-id}/comments` edge](https://developers.facebook.com/docs/graph-api/reference/v2.9/object/comments#readmodifiers).
 
 ```php
 // Order the comments in chronological order
@@ -456,10 +456,10 @@ graphVersion(string $graphApiVersion): FQB
 You can set the Graph version URL prefix for a specific request with the `graphVersion()` method.
 
 ```php
-$request = $fqb->node('me')->graphVersion('v2.8');
+$request = $fqb->node('me')->graphVersion('v2.9');
 
 echo $request->asEndpoint();
-# /v2.8/me
+# /v2.9/me
 ```
 
 
