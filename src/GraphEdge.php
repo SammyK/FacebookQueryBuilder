@@ -1,4 +1,5 @@
-<?php namespace SammyK\FacebookQueryBuilder;
+<?php
+namespace SammyK\FacebookQueryBuilder;
 
 class GraphEdge extends GraphNode
 {
@@ -7,7 +8,7 @@ class GraphEdge extends GraphNode
      *
      * @return array
      */
-    public function toEndpoints()
+    public function toEndpoints(): array
     {
         $endpoints = [];
 
@@ -24,7 +25,7 @@ class GraphEdge extends GraphNode
      *
      * @return array
      */
-    public function getChildEdges()
+    public function getChildEdges(): array
     {
         $edges        = [];
         $hasChildren = false;
@@ -51,7 +52,7 @@ class GraphEdge extends GraphNode
     /**
      * Compile the modifier values.
      */
-    public function compileModifiers()
+    public function compileModifiers(): void
     {
         if (count($this->modifiers) === 0) {
             return;
@@ -69,7 +70,7 @@ class GraphEdge extends GraphNode
     /**
      * Compile the field values.
      */
-    public function compileFields()
+    public function compileFields(): void
     {
         if (count($this->fields) === 0) {
             return;
@@ -89,7 +90,7 @@ class GraphEdge extends GraphNode
      *
      * @return string
      */
-    public function compileUrl()
+    public function compileUrl(): string
     {
         $append = '';
         if (count($this->compiledValues) > 0) {

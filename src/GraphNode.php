@@ -65,7 +65,7 @@ class GraphNode
      * @param array  $fields
      * @param int    $limit
      */
-    public function __construct($name, $fields = [], $limit = 0)
+    public function __construct(string $name, array $fields = [], int $limit = 0)
     {
         $this->name = $name;
         $this->fields($fields);
@@ -81,7 +81,7 @@ class GraphNode
      *
      * @return GraphNode
      */
-    public function modifiers(array $data)
+    public function modifiers(array $data): self
     {
         $this->modifiers = array_merge($this->modifiers, $data);
 
@@ -93,7 +93,7 @@ class GraphNode
      *
      * @return array
      */
-    public function getModifiers()
+    public function getModifiers(): array
     {
         return $this->modifiers;
     }
@@ -105,9 +105,9 @@ class GraphNode
      *
      * @return mixed|null
      */
-    public function getModifier($key)
+    public function getModifier(string $key)
     {
-        return isset($this->modifiers[$key]) ? $this->modifiers[$key] : null;
+        return $this->modifiers[$key] ?? null;
     }
 
     /**
@@ -117,7 +117,7 @@ class GraphNode
      *
      * @return GraphNode
      */
-    public function limit($limit)
+    public function limit(int $limit): self
     {
         return $this->modifiers([
           static::PARAM_LIMIT => $limit,
@@ -129,7 +129,7 @@ class GraphNode
      *
      * @return int|null
      */
-    public function getLimit()
+    public function getLimit(): ?int
     {
         return $this->getModifier(static::PARAM_LIMIT);
     }
@@ -141,7 +141,7 @@ class GraphNode
      *
      * @return GraphNode
      */
-    public function fields($fields)
+    public function fields($fields): self
     {
         if (!is_array($fields)) {
             $fields = func_get_args();
@@ -157,7 +157,7 @@ class GraphNode
      *
      * @return array
      */
-    public function getFields()
+    public function getFields(): array
     {
         return $this->fields;
     }
@@ -165,7 +165,7 @@ class GraphNode
     /**
      * Clear the compiled values.
      */
-    public function resetCompiledValues()
+    public function resetCompiledValues(): void
     {
         $this->compiledValues = [];
     }
@@ -173,7 +173,7 @@ class GraphNode
     /**
      * Compile the modifier values.
      */
-    public function compileModifiers()
+    public function compileModifiers(): void
     {
         if (count($this->modifiers) === 0) {
             return;
@@ -185,7 +185,7 @@ class GraphNode
     /**
      * Compile the field values.
      */
-    public function compileFields()
+    public function compileFields(): void
     {
         if (count($this->fields) === 0) {
             return;
@@ -199,7 +199,7 @@ class GraphNode
      *
      * @return string
      */
-    public function compileUrl()
+    public function compileUrl(): string
     {
         $append = '';
         if (count($this->compiledValues) > 0) {
@@ -216,7 +216,7 @@ class GraphNode
      *
      * @return string
      */
-    public function asUrl($appSecret = null)
+    public function asUrl(?string $appSecret = null): string
     {
         $this->resetCompiledValues();
 
@@ -235,7 +235,7 @@ class GraphNode
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->asUrl();
     }
@@ -245,7 +245,7 @@ class GraphNode
      *
      * @param string $appSecret
      */
-    private function addAppSecretProofModifier($appSecret)
+    private function addAppSecretProofModifier(string $appSecret): void
     {
         $accessToken = $this->getModifier(static::PARAM_ACCESS_TOKEN);
         if (!$accessToken) {

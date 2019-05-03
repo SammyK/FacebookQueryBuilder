@@ -55,7 +55,7 @@ class FQB
      * @param array $config An array of config options.
      * @param string|null $graphEndpoint The name of the Graph API endpoint.
      */
-    public function __construct(array $config = [], $graphEndpoint = '')
+    public function __construct(array $config = [], ?string $graphEndpoint = null)
     {
         if (isset($graphEndpoint)) {
             $this->graphNode = new GraphNode($graphEndpoint);
@@ -87,7 +87,7 @@ class FQB
      *
      * @return FQB
      */
-    public function node($graph_node_name)
+    public function node(string $graph_node_name): self
     {
         return new static($this->config, $graph_node_name);
     }
@@ -100,7 +100,7 @@ class FQB
      *
      * @return GraphEdge
      */
-    public function edge($edgeName, array $fields = [])
+    public function edge(string $edgeName, array $fields = []): GraphEdge
     {
         return new GraphEdge($edgeName, $fields);
     }
@@ -112,7 +112,7 @@ class FQB
      *
      * @return FQB
      */
-    public function fields($fields)
+    public function fields($fields): self
     {
         if (!is_array($fields)) {
             $fields = func_get_args();
@@ -130,7 +130,7 @@ class FQB
      *
      * @return FQB
      */
-    public function accessToken($accessToken)
+    public function accessToken(string $accessToken): self
     {
         $this->graphNode->modifiers([
           GraphNode::PARAM_ACCESS_TOKEN => $accessToken,
@@ -146,7 +146,7 @@ class FQB
      *
      * @return FQB
      */
-    public function graphVersion($graphVersion)
+    public function graphVersion(string $graphVersion): self
     {
         $this->graphVersion = $graphVersion;
 
@@ -160,7 +160,7 @@ class FQB
      *
      * @return FQB
      */
-    public function limit($limit)
+    public function limit(int $limit): self
     {
         $this->graphNode->limit($limit);
 
@@ -174,7 +174,7 @@ class FQB
      *
      * @return FQB
      */
-    public function modifiers(array $data)
+    public function modifiers(array $data): self
     {
         $this->graphNode->modifiers($data);
 
@@ -186,7 +186,7 @@ class FQB
      *
      * @return string
      */
-    public function asUrl()
+    public function asUrl(): string
     {
         return $this->getHostname().$this->asEndpoint();
     }
@@ -196,11 +196,11 @@ class FQB
      *
      * @return string
      */
-    public function asEndpoint()
+    public function asEndpoint(): string
     {
         $graphVersionPrefix = '';
         if ($this->graphVersion) {
-            $graphVersionPrefix = '/'.$this->graphVersion;
+            $graphVersionPrefix = "/{$this->graphVersion}";
         }
 
         return $graphVersionPrefix.$this->graphNode->asUrl($this->appSecret);
@@ -211,7 +211,7 @@ class FQB
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->asUrl();
     }
@@ -221,7 +221,7 @@ class FQB
      *
      * @return string
      */
-    private function getHostname()
+    private function getHostname(): string
     {
         if ($this->enableBetaMode === true) {
             return static::BASE_GRAPH_URL_BETA;
