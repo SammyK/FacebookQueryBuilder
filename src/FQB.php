@@ -53,13 +53,11 @@ class FQB
 
     /**
      * @param array $config An array of config options.
-     * @param string|null $graphEndpoint The name of the Graph API endpoint.
+     * @param string $graphEndpoint The name of the Graph API endpoint.
      */
-    public function __construct(array $config = [], ?string $graphEndpoint = null)
+    public function __construct(array $config = [], string $graphEndpoint = '')
     {
-        if (isset($graphEndpoint)) {
-            $this->graphNode = new GraphNode($graphEndpoint);
-        }
+        $this->graphNode = new GraphNode($graphEndpoint);
 
         $this->config = $config;
 
