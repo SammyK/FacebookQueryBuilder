@@ -21,7 +21,11 @@
     },
     "autoload": {
         "psr-4": {
-            "SammyK\\FacebookQueryBuilder\\": "src",
+            "SammyK\\FacebookQueryBuilder\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
             "SammyK\\FacebookQueryBuilderTests\\": "tests"
         }
     }
