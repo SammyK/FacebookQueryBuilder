@@ -14,4 +14,4 @@ before_script:
   - composer install --prefer-source --no-interaction
 
 script:
-  - phpunit --coverage-text
+  - php vendor/bin/phpunit --coverage-text
